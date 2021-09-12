@@ -14,14 +14,33 @@ extension Bool {
     var byteValue: Byte { self ? 1 : 0 }
 }
 
-extension UInt8 {
-    var hex: String {
-        String(format:"%02X", self)
+fileprivate extension String {
+    
+    func leftPad(with character: Character, length: UInt) -> String {
+        let maxLength = Int(length) - count
+        guard maxLength > 0 else {
+            return self
+        }
+        return String(repeating: String(character), count: maxLength) + self
     }
 }
 
-extension UInt16 {
+extension Byte {
+    var hex: String {
+        String(format:"%02X", self)
+    }
+
+    var bin: String {
+        String(self, radix: 2).leftPad(with: "0", length: 8)
+    }
+}
+
+extension Word {
     var hex: String {
         String(format:"%04X", self)
+    }
+    
+    var bin: String {
+        String(self, radix: 2).leftPad(with: "0", length: 16)
     }
 }

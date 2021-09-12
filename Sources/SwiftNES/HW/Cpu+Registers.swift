@@ -131,7 +131,7 @@ extension Cpu.Registers: CustomDebugStringConvertible {
     var debugDescription: String {
         """
         Registers
-            P: \(p)
+            P: 0x\(p.hex) - 0b\(p.bin)
              - Carry: \(carryFlag)
              - Zero: \(zeroFlag)
              - Interrupt: \(interruptFlag)
@@ -140,12 +140,12 @@ extension Cpu.Registers: CustomDebugStringConvertible {
              - Overflow: \(overflowFlag)
              - Sign: \(signFlag)
             
-            A: \(a.hex)
-            X: \(x.hex)
-            Y: \(x.hex)
+            A: 0x\(a.hex)
+            X: 0x\(x.hex)
+            Y: 0x\(y.hex)
             
-            PC: \(p.hex)
-            SP: \(p.hex)
+            PC: 0x\(pc.hex)
+            SP: 0x\(sp.hex)
         """
     }
 }
