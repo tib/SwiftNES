@@ -1,6 +1,6 @@
 //
 //  Global.swift
-//  SwiftNES
+//  SwiftNes
 //
 //  Created by Tibor Bodecs on 2021. 09. 08..
 //

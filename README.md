@@ -1,4 +1,4 @@
-# SwiftNES
+# SwiftNes
 
 This repo contains all the source code for my experimental [100 days of NES](https://twitter.com/search?q=100daysOfNES&src=typed_query) challenge.
 

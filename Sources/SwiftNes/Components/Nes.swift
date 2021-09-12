@@ -1,24 +1,28 @@
 //
 //  Nes.swift
-//  SwiftNES
+//  SwiftNes
 //
 //  Created by Tibor Bodecs on 2021. 09. 09..
 //
 
 import Foundation
 
-final class Nes {
+public final class Nes {
 
     let bus: Bus
     let memory: Memory
     let cpu: Cpu
 
-    init() {
+    public init() {
         self.bus = Bus()
         self.memory = Memory(size: 0x0800) // 2k
         self.cpu = Cpu(bus: self.bus)
 
         self.bus.delegate = self
+    }
+    
+    public func start() {
+        cpu.execute()
     }
 }
 

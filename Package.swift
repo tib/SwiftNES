@@ -1,13 +1,20 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.4
 import PackageDescription
 
 let package = Package(
-    name: "SwiftNES",
+    name: "SwiftNes",
+    products: [
+        .library(name: "SwiftNes", targets: ["SwiftNes"]),
+        .executable(name: "SwiftNesMain", targets: ["SwiftNesMain"])
+    ],
     dependencies: [
         
     ],
     targets: [
-        .executableTarget(name: "SwiftNES", dependencies: []),
-        .testTarget(name: "SwiftNESTests", dependencies: ["SwiftNES"]),
+        .target(name: "SwiftNes"),
+        .executableTarget(name: "SwiftNesMain", dependencies: [
+            .target(name: "SwiftNes"),
+        ]),
+        .testTarget(name: "SwiftNesTests", dependencies: ["SwiftNes"]),
     ]
 )
