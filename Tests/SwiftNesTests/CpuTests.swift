@@ -157,7 +157,7 @@ final class CpuTests: XCTestCase {
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
-    func testLDAIndirect() throws {
+    func testLDAIndexedIndirect() throws {
         let nes = Nes()
         nes.cpu.registers.x = 0x04
         nes.memory.storage[0x00] = 0xA1
@@ -165,6 +165,38 @@ final class CpuTests: XCTestCase {
         nes.memory.storage[0x0006] = 0x80
         nes.memory.storage[0x0007] = 0x01
         nes.memory.storage[0x0180] = 0x84
+        nes.start(cycles: 6)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 6)
+    }
+    
+    func testLDAIndirectIndexed() throws {
+        let nes = Nes()
+        nes.cpu.registers.y = 0x04
+        nes.memory.storage[0x00] = 0xB1
+        nes.memory.storage[0x01] = 0x02
+        nes.memory.storage[0x0002] = 0x80
+        nes.memory.storage[0x0003] = 0x01
+        nes.memory.storage[0x0184] = 0x84
+        nes.start(cycles: 5)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 5)
+    }
+    
+    func testLDAIndirectIndexedBoundary() throws {
+        let nes = Nes()
+        nes.cpu.registers.y = 0xFF
+        nes.memory.storage[0x00] = 0xB1
+        nes.memory.storage[0x01] = 0x02
+        nes.memory.storage[0x0002] = 0x80
+        nes.memory.storage[0x0003] = 0x00
+        nes.memory.storage[0x017F] = 0x84
         nes.start(cycles: 6)
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)

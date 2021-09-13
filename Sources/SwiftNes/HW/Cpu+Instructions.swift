@@ -254,21 +254,21 @@ extension Cpu {
             let address = fetchWord()
             registers.a = readByte(address)
         case .absoluteX:
-            let pageAddress = fetchWord()
-            let address = pageAddress + Address(registers.x)
-            // TODO: handle page change...
-            if false {
+            let address = fetchWord()
+            let addressX = address + Address(registers.x)
+            /// if diff is bigger than 0xFF, we've crossed a page
+            if addressX - address >= 0xFF {
                 totalCycles += 1
             }
-            registers.a = readByte(address)
+            registers.a = readByte(addressX)
         case .absoluteY:
-            let pageAddress = fetchWord()
-            let address = pageAddress + Address(registers.y)
-            // TODO: handle page change...
-            if false {
+            let address = fetchWord()
+            let addressY = address + Address(registers.y)
+            /// if diff is bigger than 0xFF, we've crossed a page
+            if addressY - address >= 0xFF {
                 totalCycles += 1
             }
-            registers.a = readByte(address)
+            registers.a = readByte(addressY)
         case .indexedIndirect:
             /// Add the fetched address using the overlfow operator (&+) to the x register value
             /// +1 cycle
@@ -277,7 +277,14 @@ extension Cpu {
             let pointerAddress = readWord(address)
             registers.a = readByte(pointerAddress)
         case .indirectIndexed:
-            return
+            let pointerAddress = Address(fetch())
+            let indirectAddress = readWord(pointerAddress)
+            let address = indirectAddress + Address(registers.y)
+            /// if diff is bigger than 0xFF, we've crossed a page
+            if address - indirectAddress >= 0xFF {
+                totalCycles += 1
+            }
+            registers.a = readByte(address)
         default:
             return // no action
         }
