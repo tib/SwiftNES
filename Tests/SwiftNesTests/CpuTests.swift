@@ -97,6 +97,82 @@ final class CpuTests: XCTestCase {
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
+    func testLDAAbsoluteX() throws {
+        let nes = Nes()
+        nes.cpu.registers.x = 1
+        nes.memory.storage[0x00] = 0xBD
+        nes.memory.storage[0x01] = 0x80
+        nes.memory.storage[0x02] = 0x01
+        nes.memory.storage[0x0181] = 0x84
+        nes.start(cycles: 4)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 4)
+    }
+    
+    func testLDAAbsoluteXBoundary() throws {
+        let nes = Nes()
+        nes.cpu.registers.x = 0xFF
+        nes.memory.storage[0x00] = 0xBD
+        nes.memory.storage[0x01] = 0x80
+        nes.memory.storage[0x02] = 0x00
+        nes.memory.storage[0x017F] = 0x84
+        nes.start(cycles: 5)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 5)
+    }
+    
+    func testLDAAbsoluteY() throws {
+        let nes = Nes()
+        nes.cpu.registers.y = 1
+        nes.memory.storage[0x00] = 0xB9
+        nes.memory.storage[0x01] = 0x80
+        nes.memory.storage[0x02] = 0x01
+        nes.memory.storage[0x0181] = 0x84
+        nes.start(cycles: 4)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 4)
+    }
+    
+    func testLDAAbsoluteYBoundary() throws {
+        let nes = Nes()
+        nes.cpu.registers.y = 0xFF
+        nes.memory.storage[0x00] = 0xB9
+        nes.memory.storage[0x01] = 0x80
+        nes.memory.storage[0x02] = 0x00
+        nes.memory.storage[0x017F] = 0x84
+        nes.start(cycles: 5)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 5)
+    }
+    
+    func testLDAIndirect() throws {
+        let nes = Nes()
+        nes.cpu.registers.x = 0x04
+        nes.memory.storage[0x00] = 0xA1
+        nes.memory.storage[0x01] = 0x02
+        nes.memory.storage[0x0006] = 0x80
+        nes.memory.storage[0x0007] = 0x01
+        nes.memory.storage[0x0180] = 0x84
+        nes.start(cycles: 6)
+        XCTAssertEqual(nes.cpu.registers.a, 0x84)
+        XCTAssertFalse(nes.cpu.registers.zeroFlag)
+        XCTAssertTrue(nes.cpu.registers.signFlag)
+        testUnchangedLDARegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, 6)
+    }
+    
 //    func testJSR() throws {
 //        let nes = Nes()
 //        nes.memory.storage[0x00] = 0x20

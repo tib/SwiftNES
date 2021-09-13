@@ -239,8 +239,6 @@ extension Cpu {
 
     func lda(_ addressingMode: AddressingMode) {
         switch addressingMode {
-        case .accumulator:
-            return
         case .immediate:
             registers.a = fetch()
         case .zeroPage:
@@ -252,20 +250,33 @@ extension Cpu {
             let address = Address(fetch() &+ registers.x)
             totalCycles += 1
             registers.a = readByte(address)
-        case .zeroPageY:
-            return
         case .absolute:
             let address = fetchWord()
             registers.a = readByte(address)
         case .absoluteX:
-            return
+            let pageAddress = fetchWord()
+            let address = pageAddress + Address(registers.x)
+            // TODO: handle page change...
+            if false {
+                totalCycles += 1
+            }
+            registers.a = readByte(address)
         case .absoluteY:
-            return
-        case .relative:
-            return
-        case .indirect:
-            return
+            let pageAddress = fetchWord()
+            let address = pageAddress + Address(registers.y)
+            // TODO: handle page change...
+            if false {
+                totalCycles += 1
+            }
+            registers.a = readByte(address)
         case .indexedIndirect:
+            /// Add the fetched address using the overlfow operator (&+) to the x register value
+            /// +1 cycle
+            let address = Address(fetch() &+ registers.x)
+            totalCycles += 1
+            let pointerAddress = readWord(address)
+            registers.a = readByte(pointerAddress)
+        case .indirectIndexed:
             return
         default:
             return // no action
