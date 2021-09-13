@@ -247,15 +247,16 @@ extension Cpu {
             let zeroPageAddress = Address(fetch())
             registers.a = readByte(zeroPageAddress)
         case .zeroPageX:
-            var zeroPageXAddress = Address(fetch())
+            /// Add the fetched address using the overlfow operator (&+) to the x register value
             /// +1 cycle
-            zeroPageXAddress += Address(registers.x)
+            let address = Address(fetch() &+ registers.x)
             totalCycles += 1
-            registers.a = readByte(zeroPageXAddress)
+            registers.a = readByte(address)
         case .zeroPageY:
             return
         case .absolute:
-            return
+            let address = fetchWord()
+            registers.a = readByte(address)
         case .absoluteX:
             return
         case .absoluteY:

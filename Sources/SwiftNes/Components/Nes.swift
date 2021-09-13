@@ -21,8 +21,8 @@ public final class Nes {
         self.bus.delegate = self
     }
     
-    public func start() {
-        cpu.execute()
+    public func start(cycles: Int) {
+        cpu.execute(cycles: cycles)
     }
 }
 

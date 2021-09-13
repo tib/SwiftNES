@@ -8,5 +8,5 @@
 import SwiftNes
 
 let nes = Nes()
-nes.start()
+nes.start(cycles: 2)
 

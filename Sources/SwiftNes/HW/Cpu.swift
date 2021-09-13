@@ -28,14 +28,14 @@ final class Cpu {
         totalCycles = 0
     }
 
-    func execute() {
-        while totalCycles != 9 {
+    func execute(cycles: Int) {
+        while totalCycles < cycles {
             let opcodeByte = fetch()
             guard let opcode = opcodes.first(where: { $0.value == opcodeByte }) else {
-                return print("Invalid opcode byte `\(opcodeByte.hex)`")
+                print("Invalid opcode byte `\(opcodeByte.hex)`")
+                return
             }
             call(opcode.instruction, opcode.addressingMode)
-            
             print(opcode.value.hex, registers, ", ", totalCycles)
         }
     }
@@ -78,6 +78,12 @@ final class Cpu {
         let byte = readByte(registers.pc)
         registers.pc += 1
         return byte
+    }
+    
+    func fetchWord() -> Word {
+        let word = Word(bus.readByte(from: registers.pc)) + Word(bus.readByte(from: registers.pc + 1)) << 8
+        registers.pc += 2
+        return word
     }
     
   
