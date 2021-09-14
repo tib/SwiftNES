@@ -64,64 +64,69 @@ extension Cpu {
          1000 0000 - Negative Flag
          */
 
-        // MARK: - get status flags
+        // MARK: - status flags
 
         var carryFlag: Bool {
-            (p & 0b00000001) == 1
+            get {
+                (p & 0b00000001) == 1
+            }
+            set {
+                p = (p & 0b11111110) | newValue.byteValue
+            }
         }
         
         var zeroFlag: Bool {
-            ((p & 0b00000010) >> 1) == 1
+            get {
+                ((p & 0b00000010) >> 1) == 1
+            }
+            set {
+                p = (p & 0b11111101) | newValue.byteValue << 1
+            }
         }
         
         var interruptFlag: Bool {
-            ((p & 0b00000100) >> 2) == 1
+            get {
+                ((p & 0b00000100) >> 2) == 1
+            }
+            set {
+                p = (p & 0b11111011) | newValue.byteValue << 2
+            }
         }
         
         var decimalFlag: Bool {
-            ((p & 0b00001000) >> 3) == 1
+            get {
+                ((p & 0b00001000) >> 3) == 1
+            }
+            set {
+                p = (p & 0b11110111) | newValue.byteValue << 3
+            }
         }
         
         var breakFlag: Bool {
-            ((p & 0b00010000) >> 4) == 1
+            get {
+                ((p & 0b00010000) >> 4) == 1
+            }
+            set {
+                p = (p & 0b11101111) | newValue.byteValue << 4
+            }
         }
         
         var overflowFlag: Bool {
-            ((p & 0b01000000) >> 6) == 1
+            get {
+                ((p & 0b01000000) >> 6) == 1
+            }
+            set {
+                p = (p & 0b10111111) | newValue.byteValue << 6
+            }
         }
         
         var signFlag: Bool {
-            ((p & 0b10000000) >> 7) == 1
-        }
-        
-        // MARK: - set status flags
-        
-        mutating func setCarryFlag(_ value: Bool) {
-            p = (p & 0b11111110) | value.byteValue
-        }
-        
-        mutating func setZeroFlag(_ value: Bool) {
-            p = (p & 0b11111101) | value.byteValue << 1
-        }
-        
-        mutating func setInterruptFlag(_ value: Bool) {
-            p = (p & 0b11111011) | value.byteValue << 2
-        }
-        
-        mutating func setDecimalFlag(_ value: Bool) {
-            p = (p & 0b11110111) | value.byteValue << 3
-        }
-        
-        mutating func setBreakFlag(_ value: Bool) {
-            p = (p & 0b11101111) | value.byteValue << 4
-        }
-        
-        mutating func setOverflowFlag(_ value: Bool) {
-            p = (p & 0b10111111) | value.byteValue << 6
-        }
-        
-        mutating func setSignFlag(_ value: Bool) {
-            p = (p & 0b01111111) | value.byteValue << 7
+            get {
+                ((p & 0b10000000) >> 7) == 1
+            }
+            set {
+                p = (p & 0b01111111) | newValue.byteValue << 7
+            }
         }
     }
 }

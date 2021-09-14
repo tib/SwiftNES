@@ -188,7 +188,7 @@ extension Cpu {
         case .eor: return
         case .ora: return
         case .bit: return
-        case .adc: return
+        case .adc: return adc(addressingMode)
         case .sbc: return
         case .cmp: return
         case .cpx: return
@@ -225,6 +225,13 @@ extension Cpu {
         case .nop: return nop(addressingMode)
         case .rti: return
         }
+    }
+    
+    // MARK: - helpers
+    
+    private func updateZeroAndSignFlagsUsingAccumulator() {
+        registers.zeroFlag = registers.a == 0
+        registers.signFlag = (registers.a & 0b10000000) > 0
     }
     
     // MARK: - instruction handlers
@@ -288,9 +295,31 @@ extension Cpu {
         default:
             return // no action
         }
-        registers.setZeroFlag(registers.a == 0)
-        registers.setSignFlag((registers.a & 0b10000000) > 0)
+        updateZeroAndSignFlagsUsingAccumulator()
     }
+    
+    func adc(_ addressingMode: AddressingMode) {
+        switch addressingMode {
+        case .absolute:
+            let address = fetchWord()
+            let value = readByte(address)
+            
+            /// add the value to the accumulator and add plus one if carry flag is active
+            let result = UInt16(registers.a) + UInt16(value) + UInt16(registers.carryFlag ? 1 : 0)
+
+            /// calculate new flags
+            registers.carryFlag = result & 0xFF00 > 0
+            registers.zeroFlag = result & 0x00FF == 0
+            registers.signFlag = result & 0x0080 > 0
+            registers.overflowFlag = ((result ^ UInt16(registers.a)) & (result ^ UInt16(value)) & 0x0080) > UInt16(0)
+            
+            /// set the result
+            registers.a = UInt8(result & UInt16(0xFF))
+        default:
+            return // no action
+        }
+    }
+    
     
     func brk(_ addressingMode: AddressingMode) {
         

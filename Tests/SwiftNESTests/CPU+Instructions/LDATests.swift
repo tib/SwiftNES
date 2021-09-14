@@ -1,5 +1,5 @@
 //
-//  CpuTests.swift
+//  LDATests.swift
 //  SwiftNesTests
 //
 //  Created by Tibor Bodecs on 2021. 09. 12..
@@ -8,7 +8,7 @@
 import XCTest
 @testable import SwiftNes
 
-final class CpuTests: XCTestCase {
+final class LDATests: XCTestCase {
     
     private func testUnchangedLDARegisterFlags(_ nes: Nes) {
         XCTAssertFalse(nes.cpu.registers.carryFlag)
