@@ -299,25 +299,69 @@ extension Cpu {
     }
     
     func adc(_ addressingMode: AddressingMode) {
+        let value: Byte
+
         switch addressingMode {
+        case .immediate:
+            value = fetch()
+        case .zeroPage:
+            let zeroPageAddress = Address(fetch())
+            value = readByte(zeroPageAddress)
+        case .zeroPageX:
+            /// +1 cycle
+            let address = Address(fetch() &+ registers.x)
+            totalCycles += 1
+            value = readByte(address)
         case .absolute:
             let address = fetchWord()
-            let value = readByte(address)
-            
-            /// add the value to the accumulator and add plus one if carry flag is active
-            let result = UInt16(registers.a) + UInt16(value) + UInt16(registers.carryFlag ? 1 : 0)
-
-            /// calculate new flags
-            registers.carryFlag = result & 0xFF00 > 0
-            registers.zeroFlag = result & 0x00FF == 0
-            registers.signFlag = result & 0x0080 > 0
-            registers.overflowFlag = ((result ^ UInt16(registers.a)) & (result ^ UInt16(value)) & 0x0080) > UInt16(0)
-            
-            /// set the result
-            registers.a = UInt8(result & UInt16(0xFF))
+            value = readByte(address)
+        case .absoluteX:
+            let address = fetchWord()
+            let addressX = address + Address(registers.x)
+            /// if diff is bigger than 0xFF, we've crossed a page
+            if addressX - address >= 0xFF {
+                totalCycles += 1
+            }
+            value = readByte(addressX)
+        case .absoluteY:
+            let address = fetchWord()
+            let addressY = address + Address(registers.y)
+            /// if diff is bigger than 0xFF, we've crossed a page
+            if addressY - address >= 0xFF {
+                totalCycles += 1
+            }
+            value = readByte(addressY)
+        case .indexedIndirect:
+            /// Add the fetched address using the overlfow operator (&+) to the x register value
+            /// +1 cycle
+            let address = Address(fetch() &+ registers.x)
+            totalCycles += 1
+            let pointerAddress = readWord(address)
+            value = readByte(pointerAddress)
+        case .indirectIndexed:
+            let pointerAddress = Address(fetch())
+            let indirectAddress = readWord(pointerAddress)
+            let address = indirectAddress + Address(registers.y)
+            /// if diff is bigger than 0xFF, we've crossed a page
+            if address - indirectAddress >= 0xFF {
+                totalCycles += 1
+            }
+            value = readByte(address)
         default:
             return // no action
         }
+        
+        /// add the value to the accumulator and add plus one if carry flag is active
+        let result = UInt16(registers.a) + UInt16(value) + UInt16(registers.carryFlag ? 1 : 0)
+
+        /// calculate new flags
+        registers.carryFlag = result & 0xFF00 > 0
+        registers.zeroFlag = result & 0x00FF == 0
+        registers.signFlag = result & 0x0080 > 0
+        registers.overflowFlag = ((result ^ UInt16(registers.a)) & (result ^ UInt16(value)) & 0x0080) > UInt16(0)
+        
+        /// set the result
+        registers.a = UInt8(result & UInt16(0xFF))
     }
     
     
