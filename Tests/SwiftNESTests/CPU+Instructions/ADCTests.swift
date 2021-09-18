@@ -10,7 +10,7 @@ import XCTest
 
 final class ADCTests: XCTestCase {
     
-    private func testUnchangedLDARegisterFlags(_ nes: Nes) {
+    private func testUnchangedRegisterFlags(_ nes: Nes) {
         XCTAssertFalse(nes.cpu.registers.interruptFlag)
         XCTAssertFalse(nes.cpu.registers.decimalFlag)
         XCTAssertFalse(nes.cpu.registers.breakFlag)
@@ -19,7 +19,7 @@ final class ADCTests: XCTestCase {
     
     // MARK: - test using absolute addressing mode
     
-    func testADCZeroFlag() throws {
+    func testZeroFlag() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0
@@ -33,11 +33,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCNegativeFlagPositive() throws {
+    func testNegativeFlagPositive() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0
@@ -51,11 +51,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCNegativeFlag() throws {
+    func testNegativeFlag() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0
@@ -69,11 +69,11 @@ final class ADCTests: XCTestCase {
         XCTAssertTrue(nes.cpu.registers.signFlag)
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCPositiveAndNegativeWithCarry() throws {
+    func testPositiveAndNegativeWithCarry() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 20
@@ -87,11 +87,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCNegativesWithCarry() throws {
+    func testNegativesWithCarry() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 0b10000000 // -128
@@ -105,11 +105,11 @@ final class ADCTests: XCTestCase {
         XCTAssertTrue(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCCarryFlagAddition() throws {
+    func testCarryFlagAddition() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 20
@@ -123,11 +123,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCCarryFlag() throws {
+    func testCarryFlag() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0xFF
@@ -141,11 +141,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCOverflowFlag() throws {
+    func testOverflowFlag() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 127
@@ -159,11 +159,11 @@ final class ADCTests: XCTestCase {
         XCTAssertTrue(nes.cpu.registers.signFlag)
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCOverflowFlagNegative() throws {
+    func testOverflowFlagNegative() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
@@ -177,13 +177,13 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
     // MARK: - test other addressing modes
     
-    func testADCZeroPageAddressingMode() throws {
+    func testZeroPageAddressingMode() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
@@ -196,11 +196,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 3)
     }
     
-    func testADCZeroPageXAddressingMode() throws {
+    func testZeroPageXAddressingMode() throws {
         let nes = Nes()
         nes.cpu.registers.x = 5
         nes.cpu.registers.carryFlag = false
@@ -214,11 +214,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCAbsoluteXAddressingMode() throws {
+    func testAbsoluteXAddressingMode() throws {
         let nes = Nes()
         nes.cpu.registers.x = 1
         nes.cpu.registers.carryFlag = false
@@ -233,11 +233,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCAbsoluteXBoundary() throws {
+    func testAbsoluteXBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.x = 0xFF
         nes.cpu.registers.carryFlag = false
@@ -252,11 +252,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
-    func testADCAbsoluteYAddressingMode() throws {
+    func testAbsoluteYAddressingMode() throws {
         let nes = Nes()
         nes.cpu.registers.y = 1
         nes.cpu.registers.carryFlag = false
@@ -271,11 +271,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testADCAbsoluteYBoundary() throws {
+    func testAbsoluteYBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0xFF
         nes.cpu.registers.carryFlag = false
@@ -290,12 +290,12 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
     
-    func testADCIndexedIndirectAddressingMode() throws {
+    func testIndexedIndirectAddressingMode() throws {
         let nes = Nes()
         nes.cpu.registers.x = 0x04
         nes.cpu.registers.carryFlag = false
@@ -311,11 +311,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 6)
     }
     
-    func testADCIndirectIndexedAddressingMode() throws {
+    func testIndirectIndexedAddressingMode() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0x04
         nes.cpu.registers.carryFlag = false
@@ -331,11 +331,11 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
-    func testADCIndirectIndexedBoundary() throws {
+    func testIndirectIndexedBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0xFF
         nes.cpu.registers.carryFlag = false
@@ -351,7 +351,7 @@ final class ADCTests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.signFlag)
         XCTAssertTrue(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 6)
     }
 

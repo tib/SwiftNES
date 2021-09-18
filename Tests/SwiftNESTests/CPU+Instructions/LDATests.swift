@@ -10,7 +10,7 @@ import XCTest
 
 final class LDATests: XCTestCase {
     
-    private func testUnchangedLDARegisterFlags(_ nes: Nes) {
+    private func testUnchangedRegisterFlags(_ nes: Nes) {
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertFalse(nes.cpu.registers.interruptFlag)
         XCTAssertFalse(nes.cpu.registers.decimalFlag)
@@ -18,7 +18,7 @@ final class LDATests: XCTestCase {
         XCTAssertFalse(nes.cpu.registers.overflowFlag)
     }
     
-    func testLDAZeroFlag() throws {
+    func testZeroFlag() throws {
         let nes = Nes()
         nes.memory.storage[0x00] = 0xA9
         nes.memory.storage[0x01] = 0
@@ -26,11 +26,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0)
         XCTAssertTrue(nes.cpu.registers.zeroFlag)
         XCTAssertFalse(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 2)
     }
     
-    func testLDA() throws {
+    func test() throws {
         let nes = Nes()
         nes.memory.storage[0x00] = 0xA9
         nes.memory.storage[0x01] = 0x84
@@ -38,11 +38,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 2)
     }
     
-    func testLDAZeroPage() throws {
+    func testZeroPage() throws {
         let nes = Nes()
         nes.memory.storage[0x00] = 0xA5
         nes.memory.storage[0x01] = 0x42
@@ -51,11 +51,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 11)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertFalse(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 3)
     }
     
-    func testLDAZeroPageX() throws {
+    func testZeroPageX() throws {
         let nes = Nes()
         nes.cpu.registers.x = 5
         nes.memory.storage[0x00] = 0xB5
@@ -65,11 +65,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x37)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertFalse(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testLDAZeroPageXOverflow () throws {
+    func testZeroPageXOverflow () throws {
         let nes = Nes()
         nes.cpu.registers.x = 0xFF
         nes.memory.storage[0x00] = 0xB5
@@ -79,11 +79,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x37)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertFalse(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testLDAAbsolute() throws {
+    func testAbsolute() throws {
         let nes = Nes()
         nes.memory.storage[0x00] = 0xAD
         nes.memory.storage[0x01] = 0x80
@@ -93,11 +93,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testLDAAbsoluteX() throws {
+    func testAbsoluteX() throws {
         let nes = Nes()
         nes.cpu.registers.x = 1
         nes.memory.storage[0x00] = 0xBD
@@ -108,11 +108,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testLDAAbsoluteXBoundary() throws {
+    func testAbsoluteXBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.x = 0xFF
         nes.memory.storage[0x00] = 0xBD
@@ -123,11 +123,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
-    func testLDAAbsoluteY() throws {
+    func testAbsoluteY() throws {
         let nes = Nes()
         nes.cpu.registers.y = 1
         nes.memory.storage[0x00] = 0xB9
@@ -138,11 +138,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
     
-    func testLDAAbsoluteYBoundary() throws {
+    func testAbsoluteYBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0xFF
         nes.memory.storage[0x00] = 0xB9
@@ -153,11 +153,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
-    func testLDAIndexedIndirect() throws {
+    func testIndexedIndirect() throws {
         let nes = Nes()
         nes.cpu.registers.x = 0x04
         nes.memory.storage[0x00] = 0xA1
@@ -169,11 +169,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 6)
     }
     
-    func testLDAIndirectIndexed() throws {
+    func testIndirectIndexed() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0x04
         nes.memory.storage[0x00] = 0xB1
@@ -185,11 +185,11 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 5)
     }
     
-    func testLDAIndirectIndexedBoundary() throws {
+    func testIndirectIndexedBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0xFF
         nes.memory.storage[0x00] = 0xB1
@@ -201,7 +201,7 @@ final class LDATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.a, 0x84)
         XCTAssertFalse(nes.cpu.registers.zeroFlag)
         XCTAssertTrue(nes.cpu.registers.signFlag)
-        testUnchangedLDARegisterFlags(nes)
+        testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 6)
     }
     
