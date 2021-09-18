@@ -227,13 +227,6 @@ extension Cpu {
         }
     }
     
-    // MARK: - helpers
-    
-    private func updateZeroAndSignFlagsUsing(_ value: Byte) {
-        registers.zeroFlag = value == 0
-        registers.signFlag = (value & 0b10000000) > 0
-    }
-    
     // MARK: - instruction handlers
     
     func invalid(_ addressingMode: AddressingMode) {

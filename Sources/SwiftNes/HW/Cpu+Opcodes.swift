@@ -22,6 +22,10 @@ extension Cpu {
             self.addressingMode = addressingMode
         }
     }
+ 
+    func opcode(_ instruction: Cpu.Instruction, _ addressingMode: Cpu.AddressingMode) -> Byte {
+        opcodes.first(where: { $0.instruction == instruction && $0.addressingMode == addressingMode})!.value
+    }
 
     var opcodes: [Opcode] {
         [

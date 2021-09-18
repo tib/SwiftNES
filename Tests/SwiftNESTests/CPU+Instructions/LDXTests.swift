@@ -19,8 +19,8 @@ final class LDXTests: XCTestCase {
     }
 
     func testImmediate() throws {
-        let nes = Nes()
-        nes.memory.storage[0x00] = 0xA2
+        let nes = Nes()        
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .immediate)
         nes.memory.storage[0x01] = 0x84
         nes.start(cycles: 2)
         XCTAssertEqual(nes.cpu.registers.x, 0x84)
@@ -32,7 +32,7 @@ final class LDXTests: XCTestCase {
     
     func testZeroPage() throws {
         let nes = Nes()
-        nes.memory.storage[0x00] = 0xA6
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .zeroPage)
         nes.memory.storage[0x01] = 0x42
         nes.memory.storage[0x42] = 11
         nes.start(cycles: 3)
@@ -46,7 +46,7 @@ final class LDXTests: XCTestCase {
     func testZeroPageY() throws {
         let nes = Nes()
         nes.cpu.registers.y = 5
-        nes.memory.storage[0x00] = 0xB6
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .zeroPageY)
         nes.memory.storage[0x01] = 0x42
         nes.memory.storage[0x47] = 0x37
         nes.start(cycles: 4)
@@ -60,7 +60,7 @@ final class LDXTests: XCTestCase {
     func testZeroPageYOverflow () throws {
         let nes = Nes()
         nes.cpu.registers.y = 0xFF
-        nes.memory.storage[0x00] = 0xB6
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .zeroPageY)
         nes.memory.storage[0x01] = 0x80
         nes.memory.storage[0x007F] = 0x37
         nes.start(cycles: 4)
@@ -73,7 +73,7 @@ final class LDXTests: XCTestCase {
     
     func testAbsolute() throws {
         let nes = Nes()
-        nes.memory.storage[0x00] = 0xAE
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .absolute)
         nes.memory.storage[0x01] = 0x80
         nes.memory.storage[0x02] = 0x01
         nes.memory.storage[0x0180] = 0x84
@@ -88,7 +88,7 @@ final class LDXTests: XCTestCase {
     func testAbsoluteY() throws {
         let nes = Nes()
         nes.cpu.registers.y = 1
-        nes.memory.storage[0x00] = 0xBE
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .absoluteY)
         nes.memory.storage[0x01] = 0x80
         nes.memory.storage[0x02] = 0x01
         nes.memory.storage[0x0181] = 0x84
@@ -103,7 +103,7 @@ final class LDXTests: XCTestCase {
     func testAbsoluteYBoundary() throws {
         let nes = Nes()
         nes.cpu.registers.y = 0xFF
-        nes.memory.storage[0x00] = 0xBE
+        nes.memory.storage[0x00] = nes.cpu.opcode(.ldx, .absoluteY)
         nes.memory.storage[0x01] = 0x80
         nes.memory.storage[0x02] = 0x00
         nes.memory.storage[0x017F] = 0x84

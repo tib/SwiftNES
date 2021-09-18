@@ -23,7 +23,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 0
@@ -41,7 +41,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 1
@@ -59,7 +59,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 0b11111111 // -1
@@ -77,7 +77,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 20
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 0b11101111 // -17
@@ -95,7 +95,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 0b11111111 // -1
@@ -113,7 +113,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 20
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 17
@@ -131,7 +131,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0xFF
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 1
@@ -149,7 +149,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 127
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 1
@@ -167,7 +167,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x6D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absolute)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0180] = 0b11111111 // -1
@@ -187,7 +187,7 @@ final class ADCTests: XCTestCase {
         let nes = Nes()
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x65
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .zeroPage)
         nes.memory.storage[0x0001] = 0x42
         nes.memory.storage[0x0042] = 0b11111111 // -1
         nes.start(cycles: 3)
@@ -205,7 +205,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.x = 5
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x75
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .zeroPageX)
         nes.memory.storage[0x0001] = 0x42
         nes.memory.storage[0x0047] = 0b11111111 // -1
         nes.start(cycles: 4)
@@ -223,7 +223,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.x = 1
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x7D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absoluteX)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0181] = 0b11111111 // -1
@@ -242,7 +242,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.x = 0xFF
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x7D
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absoluteX)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x00
         nes.memory.storage[0x017F] = 0b11111111 // -1
@@ -261,7 +261,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.y = 1
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x79
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absoluteY)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x01
         nes.memory.storage[0x0181] = 0b11111111 // -1
@@ -280,7 +280,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.y = 0xFF
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x79
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .absoluteY)
         nes.memory.storage[0x0001] = 0x80
         nes.memory.storage[0x0002] = 0x00
         nes.memory.storage[0x017F] = 0b11111111 // -1
@@ -300,7 +300,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.x = 0x04
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x61
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .indexedIndirect)
         nes.memory.storage[0x0001] = 0x02
         nes.memory.storage[0x0006] = 0x80
         nes.memory.storage[0x0007] = 0x01
@@ -320,7 +320,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.y = 0x04
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x71
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .indirectIndexed)
         nes.memory.storage[0x0001] = 0x02
         nes.memory.storage[0x0002] = 0x80
         nes.memory.storage[0x0003] = 0x01
@@ -340,7 +340,7 @@ final class ADCTests: XCTestCase {
         nes.cpu.registers.y = 0xFF
         nes.cpu.registers.carryFlag = false
         nes.cpu.registers.a = 0b10000000 // -128
-        nes.memory.storage[0x0000] = 0x71
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.adc, .indirectIndexed)
         nes.memory.storage[0x0001] = 0x02
         nes.memory.storage[0x0002] = 0x80
         nes.memory.storage[0x0003] = 0x00

@@ -85,8 +85,13 @@ final class Cpu {
         registers.pc += 2
         return word
     }
-    
   
+    // MARK: - register status updates
+    
+    func updateZeroAndSignFlagsUsing(_ value: Byte) {
+        registers.zeroFlag = value == 0
+        registers.signFlag = (value & 0b10000000) > 0
+    }
 
     
 }
