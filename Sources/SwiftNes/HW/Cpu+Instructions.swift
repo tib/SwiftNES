@@ -169,7 +169,7 @@ extension Cpu {
         switch instruction {
         case .invalid: return invalid(addressingMode)
         case .lda: return lda(addressingMode)
-        case .ldx: return
+        case .ldx: return ldx(addressingMode)
         case .ldy: return
         case .sta: return
         case .stx: return
@@ -229,9 +229,9 @@ extension Cpu {
     
     // MARK: - helpers
     
-    private func updateZeroAndSignFlagsUsingAccumulator() {
-        registers.zeroFlag = registers.a == 0
-        registers.signFlag = (registers.a & 0b10000000) > 0
+    private func updateZeroAndSignFlagsUsing(_ value: Byte) {
+        registers.zeroFlag = value == 0
+        registers.signFlag = (value & 0b10000000) > 0
     }
     
     // MARK: - instruction handlers
@@ -249,53 +249,41 @@ extension Cpu {
         case .immediate:
             registers.a = fetch()
         case .zeroPage:
-            let zeroPageAddress = Address(fetch())
-            registers.a = readByte(zeroPageAddress)
+            registers.a = readByte(fetchZeroPageAddress())
         case .zeroPageX:
-            /// Add the fetched address using the overlfow operator (&+) to the x register value
-            /// +1 cycle
-            let address = Address(fetch() &+ registers.x)
-            totalCycles += 1
-            registers.a = readByte(address)
+            registers.a = readByte(fetchZeroPageXAddress())
         case .absolute:
-            let address = fetchWord()
-            registers.a = readByte(address)
+            registers.a = readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            let address = fetchWord()
-            let addressX = address + Address(registers.x)
-            /// if diff is bigger than 0xFF, we've crossed a page
-            if addressX - address >= 0xFF {
-                totalCycles += 1
-            }
-            registers.a = readByte(addressX)
+            registers.a = readByte(fetchAbsoluteXAddress())
         case .absoluteY:
-            let address = fetchWord()
-            let addressY = address + Address(registers.y)
-            /// if diff is bigger than 0xFF, we've crossed a page
-            if addressY - address >= 0xFF {
-                totalCycles += 1
-            }
-            registers.a = readByte(addressY)
+            registers.a = readByte(fetchAbsoluteYAddress())
         case .indexedIndirect:
-            /// Add the fetched address using the overlfow operator (&+) to the x register value
-            /// +1 cycle
-            let address = Address(fetch() &+ registers.x)
-            totalCycles += 1
-            let pointerAddress = readWord(address)
-            registers.a = readByte(pointerAddress)
+            registers.a = readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            let pointerAddress = Address(fetch())
-            let indirectAddress = readWord(pointerAddress)
-            let address = indirectAddress + Address(registers.y)
-            /// if diff is bigger than 0xFF, we've crossed a page
-            if address - indirectAddress >= 0xFF {
-                totalCycles += 1
-            }
-            registers.a = readByte(address)
+            registers.a = readByte(fetchIndirectIndexedAddress())
         default:
             return // no action
         }
-        updateZeroAndSignFlagsUsingAccumulator()
+        updateZeroAndSignFlagsUsing(registers.a)
+    }
+    
+    func ldx(_ addressingMode: AddressingMode) {
+        switch addressingMode {
+        case .immediate:
+            registers.x = fetch()
+        case .zeroPage:
+            registers.x = readByte(fetchZeroPageAddress())
+        case .zeroPageY:
+            registers.x = readByte(fetchZeroPageYAddress())
+        case .absolute:
+            registers.x = readByte(fetchAbsoluteAddress())
+        case .absoluteY:
+            registers.x = readByte(fetchAbsoluteYAddress())
+        default:
+            return // no action
+        }
+        updateZeroAndSignFlagsUsing(registers.x)
     }
     
     func adc(_ addressingMode: AddressingMode) {
@@ -305,48 +293,19 @@ extension Cpu {
         case .immediate:
             value = fetch()
         case .zeroPage:
-            let zeroPageAddress = Address(fetch())
-            value = readByte(zeroPageAddress)
+            value = readByte(fetchZeroPageAddress())
         case .zeroPageX:
-            /// +1 cycle
-            let address = Address(fetch() &+ registers.x)
-            totalCycles += 1
-            value = readByte(address)
+            value = readByte(fetchZeroPageXAddress())
         case .absolute:
-            let address = fetchWord()
-            value = readByte(address)
+            value = readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            let address = fetchWord()
-            let addressX = address + Address(registers.x)
-            /// if diff is bigger than 0xFF, we've crossed a page
-            if addressX - address >= 0xFF {
-                totalCycles += 1
-            }
-            value = readByte(addressX)
+            value = readByte(fetchAbsoluteXAddress())
         case .absoluteY:
-            let address = fetchWord()
-            let addressY = address + Address(registers.y)
-            /// if diff is bigger than 0xFF, we've crossed a page
-            if addressY - address >= 0xFF {
-                totalCycles += 1
-            }
-            value = readByte(addressY)
+            value = readByte(fetchAbsoluteYAddress())
         case .indexedIndirect:
-            /// Add the fetched address using the overlfow operator (&+) to the x register value
-            /// +1 cycle
-            let address = Address(fetch() &+ registers.x)
-            totalCycles += 1
-            let pointerAddress = readWord(address)
-            value = readByte(pointerAddress)
+            value = readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            let pointerAddress = Address(fetch())
-            let indirectAddress = readWord(pointerAddress)
-            let address = indirectAddress + Address(registers.y)
-            /// if diff is bigger than 0xFF, we've crossed a page
-            if address - indirectAddress >= 0xFF {
-                totalCycles += 1
-            }
-            value = readByte(address)
+            value = readByte(fetchIndirectIndexedAddress())
         default:
             return // no action
         }
