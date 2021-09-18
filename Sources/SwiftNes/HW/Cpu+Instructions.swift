@@ -170,7 +170,7 @@ extension Cpu {
         case .invalid: return invalid(addressingMode)
         case .lda: return lda(addressingMode)
         case .ldx: return ldx(addressingMode)
-        case .ldy: return
+        case .ldy: return ldy(addressingMode)
         case .sta: return
         case .stx: return
         case .sty: return
@@ -284,6 +284,24 @@ extension Cpu {
             return // no action
         }
         updateZeroAndSignFlagsUsing(registers.x)
+    }
+    
+    func ldy(_ addressingMode: AddressingMode) {
+        switch addressingMode {
+        case .immediate:
+            registers.y = fetch()
+        case .zeroPage:
+            registers.y = readByte(fetchZeroPageAddress())
+        case .zeroPageX:
+            registers.y = readByte(fetchZeroPageXAddress())
+        case .absolute:
+            registers.y = readByte(fetchAbsoluteAddress())
+        case .absoluteX:
+            registers.y = readByte(fetchAbsoluteXAddress())
+        default:
+            return // no action
+        }
+        updateZeroAndSignFlagsUsing(registers.y)
     }
     
     func adc(_ addressingMode: AddressingMode) {
