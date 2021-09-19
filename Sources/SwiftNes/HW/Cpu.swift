@@ -55,7 +55,7 @@ final class Cpu {
     ///
     /// This operation costs two clock cycles
     func readWord(_ address: Address) -> Word {
-        let word = Word(bus.readByte(from: address)) + Word(bus.readByte(from: address + 1)) << 8
+        let word = Word(bus.readByte(from: address)) | Word(bus.readByte(from: address + 1)) << 8
         totalCycles += 2
         return word
     }
@@ -81,7 +81,7 @@ final class Cpu {
     }
     
     func fetchWord() -> Word {
-        let word = Word(bus.readByte(from: registers.pc)) + Word(bus.readByte(from: registers.pc + 1)) << 8
+        let word = Word(bus.readByte(from: registers.pc)) | Word(bus.readByte(from: registers.pc + 1)) << 8
         registers.pc += 2
         return word
     }

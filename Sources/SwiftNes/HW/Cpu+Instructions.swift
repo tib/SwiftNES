@@ -171,9 +171,9 @@ extension Cpu {
         case .lda: return lda(addressingMode)
         case .ldx: return ldx(addressingMode)
         case .ldy: return ldy(addressingMode)
-        case .sta: return
-        case .stx: return
-        case .sty: return
+        case .sta: return sta(addressingMode)
+        case .stx: return stx(addressingMode)
+        case .sty: return sty(addressingMode)
         case .tax: return
         case .tay: return
         case .txa: return
@@ -297,6 +297,53 @@ extension Cpu {
         updateZeroAndSignFlagsUsing(registers.y)
     }
     
+    func sta(_ addressingMode: AddressingMode) {
+        switch addressingMode {
+        case .zeroPage:
+            writeByte(registers.a, to: fetchZeroPageAddress())
+        case .zeroPageX:
+            writeByte(registers.a, to: fetchZeroPageXAddress())
+        case .absolute:
+            writeByte(registers.a, to: fetchAbsoluteAddress())
+        case .absoluteX:
+            writeByte(registers.a, to: fetchAbsoluteXAddress())
+        case .absoluteY:
+            writeByte(registers.a, to: fetchAbsoluteYAddress())
+        case .indexedIndirect:
+            writeByte(registers.a, to: fetchIndexedIndirectAddress())
+        case .indirectIndexed:
+            writeByte(registers.a, to: fetchIndirectIndexedAddress())
+        default:
+            return // no action
+        }
+    }
+    
+    func stx(_ addressingMode: AddressingMode) {
+        switch addressingMode {
+        case .zeroPage:
+            writeByte(registers.x, to: fetchZeroPageAddress())
+        case .zeroPageY:
+            writeByte(registers.x, to: fetchZeroPageYAddress())
+        case .absolute:
+            writeByte(registers.x, to: fetchAbsoluteAddress())
+        default:
+            return // no action
+        }
+    }
+    
+    func sty(_ addressingMode: AddressingMode) {
+        switch addressingMode {
+        case .zeroPage:
+            writeByte(registers.y, to: fetchZeroPageAddress())
+        case .zeroPageX:
+            writeByte(registers.y, to: fetchZeroPageXAddress())
+        case .absolute:
+            writeByte(registers.y, to: fetchAbsoluteAddress())
+        default:
+            return // no action
+        }
+    }
+    
     func adc(_ addressingMode: AddressingMode) {
         let value: Byte
 
@@ -354,7 +401,7 @@ extension Cpu {
     func jsr(_ addressingMode: AddressingMode) {
         guard addressingMode == .absolute else { return }
 
-        let absoluteAddress = Address(fetch()) + Address(fetch()) << 8
+        let absoluteAddress = Address(fetch()) | Address(fetch()) << 8
 
         writeWord(registers.pc - 1, to: Address(registers.sp + 1))
 
