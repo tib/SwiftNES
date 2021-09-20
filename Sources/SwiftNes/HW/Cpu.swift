@@ -81,7 +81,7 @@ final class Cpu {
     }
     
     func fetchWord() -> Word {
-        let word = Word(bus.readByte(from: registers.pc)) | Word(bus.readByte(from: registers.pc + 1)) << 8
+        let word = readWord(registers.pc)
         registers.pc += 2
         return word
     }
@@ -93,5 +93,16 @@ final class Cpu {
         registers.signFlag = (value & 0b10000000) > 0
     }
 
+    // MARK: - stack updates
     
+    func pushToStack(_ address: Address) {
+        writeWord(address, to: Address(registers.sp - 1))
+        registers.sp -= 2
+    }
+    
+    func popFromStack() -> Address {
+        let address = readWord(Address(registers.sp + 1))
+        registers.sp += 2
+        return address
+    }
 }

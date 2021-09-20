@@ -205,7 +205,7 @@ extension Cpu {
         case .ror: return
         case .jmp: return jmp(addressingMode)
         case .jsr: return jsr(addressingMode)
-        case .rts: return
+        case .rts: return rts(addressingMode)
         case .bcc: return
         case .bcs: return
         case .beq: return
@@ -221,13 +221,17 @@ extension Cpu {
         case .sec: return
         case .sed: return
         case .sei: return
-        case .brk: return
+        case .brk: return brk(addressingMode)
         case .nop: return nop(addressingMode)
         case .rti: return
         }
     }
     
     // MARK: - instruction handlers
+    
+    func brk(_ addressingMode: AddressingMode) {
+        print("!!! BRK instruction")
+    }
     
     func invalid(_ addressingMode: AddressingMode) {
         print("Invalid instruction")
@@ -381,11 +385,6 @@ extension Cpu {
         registers.a = UInt8(result & UInt16(0xFF))
     }
     
-    
-    func brk(_ addressingMode: AddressingMode) {
-        
-    }
-    
     func ora(_ addressingMode: AddressingMode) {
         
     }
@@ -395,18 +394,31 @@ extension Cpu {
     }
     
     func jmp(_ addressingMode: AddressingMode) {
-        
+        switch addressingMode {
+        case .absolute:
+            registers.pc = fetchAbsoluteAddress()
+        case .indirect:
+            registers.pc = readWord(fetchAbsoluteAddress())
+        default:
+            return // no action
+        }
     }
     
     func jsr(_ addressingMode: AddressingMode) {
         guard addressingMode == .absolute else { return }
-
-        let absoluteAddress = Address(fetch()) | Address(fetch()) << 8
-
-        writeWord(registers.pc - 1, to: Address(registers.sp + 1))
-
+        
+        let address = fetchAbsoluteAddress()
+        pushToStack(registers.pc - 1)
         /// +1 cycle
-        registers.pc = absoluteAddress
+        registers.pc = address
         totalCycles += 1
+    }
+    
+    func rts(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        let address = popFromStack()
+        totalCycles += 2
+        registers.pc = address + 1
     }
 }

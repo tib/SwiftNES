@@ -11,6 +11,17 @@ extension Cpu {
 
     /// http://www.obelisk.me.uk/6502/registers.html
     struct Registers {
+ 
+        /*
+        0000 0001 - Carry Flag
+        0000 0010 - Zero Flag
+        0000 0100 - Interrupt Disable
+        0000 1000 - Decimal Mode
+        0001 0000 - Unused
+        0010 0000 - Break Command
+        0100 0000 - Overflow Flag
+        1000 0000 - Negative Flag
+        */
         
         /// status flags
         private var p: Byte
@@ -31,16 +42,7 @@ extension Cpu {
             self.x = 0
             self.y = 0
             self.pc = 0
-            self.sp = 0
-            
-//            setCarryFlag(true)
-//            setZeroFlag(true)
-//            setInterruptFlag(true)
-//            setDecimalFlag(true)
-//            setBreakFlag(true)
-//            setOverflowFlag(true)
-//            setSignFlag(true)
-//            print(self)
+            self.sp = 0xFF
         }
         
         /// resets the CPU internal state & pointers
@@ -50,19 +52,8 @@ extension Cpu {
             x = 0
             y = 0
             pc = 0
-            sp = 0
+            sp = 0xFF
         }
-        
-        /*
-         0000 0001 - Carry Flag
-         0000 0010 - Zero Flag
-         0000 0100 - Interrupt Disable
-         0000 1000 - Decimal Mode
-         0001 0000 - Unused
-         0010 0000 - Break Command
-         0100 0000 - Overflow Flag
-         1000 0000 - Negative Flag
-         */
 
         // MARK: - status flags
 
