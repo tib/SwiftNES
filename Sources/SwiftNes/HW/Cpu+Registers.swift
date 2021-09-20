@@ -24,7 +24,7 @@ extension Cpu {
         */
         
         /// status flags
-        private var p: Byte
+        var p: Byte
         /// accumulator
         var a: Byte
         /// index register x

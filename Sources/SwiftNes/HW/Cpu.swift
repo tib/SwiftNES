@@ -95,14 +95,29 @@ final class Cpu {
 
     // MARK: - stack updates
     
-    func pushToStack(_ address: Address) {
-        writeWord(address, to: Address(registers.sp - 1))
+    var spAddress: Address {
+        0x0100 | Address(registers.sp)
+    }
+    
+    func pushWordToStack(_ value: Word) {
+        writeWord(value, to: spAddress - 1)
         registers.sp -= 2
     }
     
-    func popFromStack() -> Address {
-        let address = readWord(Address(registers.sp + 1))
+    func pushByteToStack(_ value: Byte) {
+        writeByte(value, to: spAddress)
+        registers.sp -= 1
+    }
+    
+    func popWordFromStack() -> Address {
+        let value = readWord(spAddress + 1)
         registers.sp += 2
-        return address
+        return value
+    }
+    
+    func popByteFromStack() -> Byte {
+        let value = readByte(spAddress)
+        registers.sp += 1
+        return value
     }
 }

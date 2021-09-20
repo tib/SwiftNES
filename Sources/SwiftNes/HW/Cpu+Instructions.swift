@@ -178,12 +178,12 @@ extension Cpu {
         case .tay: return
         case .txa: return
         case .tya: return
-        case .tsx: return
-        case .txs: return
-        case .pha: return
-        case .php: return
-        case .pla: return
-        case .plp: return
+        case .tsx: return tsx(addressingMode)
+        case .txs: return txs(addressingMode)
+        case .pha: return pha(addressingMode)
+        case .php: return php(addressingMode)
+        case .pla: return pla(addressingMode)
+        case .plp: return plp(addressingMode)
         case .and: return
         case .eor: return
         case .ora: return
@@ -408,7 +408,7 @@ extension Cpu {
         guard addressingMode == .absolute else { return }
         
         let address = fetchAbsoluteAddress()
-        pushToStack(registers.pc - 1)
+        pushWordToStack(registers.pc - 1)
         /// +1 cycle
         registers.pc = address
         totalCycles += 1
@@ -417,8 +417,48 @@ extension Cpu {
     func rts(_ addressingMode: AddressingMode) {
         guard addressingMode == .implicit else { return }
         
-        let address = popFromStack()
+        let address = popWordFromStack()
         totalCycles += 2
         registers.pc = address + 1
+    }
+    
+    func tsx(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        registers.x = registers.sp
+        totalCycles += 1
+        updateZeroAndSignFlagsUsing(registers.x)
+    }
+    
+    func txs(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        registers.sp = registers.x
+        totalCycles += 1
+    }
+    
+    func pha(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        pushByteToStack(registers.a)
+    }
+    
+    func php(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        pushByteToStack(registers.p)
+    }
+    
+    func pla(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        registers.a = popByteFromStack()
+        updateZeroAndSignFlagsUsing(registers.a)
+    }
+    
+    func plp(_ addressingMode: AddressingMode) {
+        guard addressingMode == .implicit else { return }
+        
+        registers.p = popByteFromStack()
     }
 }
