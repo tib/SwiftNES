@@ -201,10 +201,10 @@ extension Cpu {
         case .cmp: return 0
         case .cpx: return 0
         case .cpy: return 0
-        case .inc: return 0
+        case .inc: return inc(addressingMode)
         case .inx: return inx(addressingMode)
         case .iny: return iny(addressingMode)
-        case .dec: return 0
+        case .dec: return dec(addressingMode)
         case .dex: return dex(addressingMode)
         case .dey: return dey(addressingMode)
         case .asl: return 0
@@ -781,5 +781,57 @@ extension Cpu {
         registers.y = registers.y &- 1
         updateZeroAndSignFlagsUsing(registers.y)
         return 2
+    }
+    
+    /// Subtracts one from the value held at a specified memory location setting the zero and negative flags as appropriate.
+    func dec(_ addressingMode: AddressingMode) -> Int {
+        let cycles: Int
+        let address: Address
+        switch addressingMode {
+        case .zeroPage:
+            cycles = 5
+            address = fetchZeroPageAddress()
+        case .zeroPageX:
+            cycles = 6
+            address = fetchZeroPageXAddress()
+        case .absolute:
+            cycles = 6
+            address = fetchAbsoluteAddress()
+        case .absoluteX:
+            cycles = 7
+            address = fetchAbsoluteXAddress()
+        default:
+            return 0
+        }
+        let value = readByte(address)
+        writeByte(value &- 1, to: address)
+        updateZeroAndSignFlagsUsing(value)
+        return cycles
+    }
+    
+    /// Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
+    func inc(_ addressingMode: AddressingMode) -> Int {
+        let cycles: Int
+        let address: Address
+        switch addressingMode {
+        case .zeroPage:
+            cycles = 5
+            address = fetchZeroPageAddress()
+        case .zeroPageX:
+            cycles = 6
+            address = fetchZeroPageXAddress()
+        case .absolute:
+            cycles = 6
+            address = fetchAbsoluteAddress()
+        case .absoluteX:
+            cycles = 7
+            address = fetchAbsoluteXAddress()
+        default:
+            return 0
+        }
+        let value = readByte(address)
+        writeByte(value &+ 1, to: address)
+        updateZeroAndSignFlagsUsing(value)
+        return cycles
     }
 }
