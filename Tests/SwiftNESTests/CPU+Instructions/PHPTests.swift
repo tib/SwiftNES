@@ -20,7 +20,7 @@ final class PHPTests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.overflowFlag, registers.overflowFlag)
     }
     
-    func testImplied() throws {
+    func testImplicit() throws {
         let nes = Nes()
         nes.cpu.registers.p = 0xCC
 

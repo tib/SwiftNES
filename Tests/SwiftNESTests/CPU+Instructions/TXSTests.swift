@@ -20,7 +20,7 @@ final class TXSTests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.overflowFlag, registers.overflowFlag)
     }
     
-    func testImplied() throws {
+    func testImplicit() throws {
         let nes = Nes()
         let registers = nes.cpu.registers
         nes.cpu.registers.x = 0xFF

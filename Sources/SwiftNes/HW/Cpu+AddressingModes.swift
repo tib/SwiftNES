@@ -52,6 +52,7 @@ extension Cpu {
         fetchWord()
     }
     
+    // TODO: inout cycles: Int
     func fetchAbsoluteXAddress() -> Address {
         let address = fetchWord()
         let addressX = address + Address(registers.x)

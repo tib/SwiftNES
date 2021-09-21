@@ -19,7 +19,7 @@ final class PLATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.overflowFlag, registers.overflowFlag)
     }
     
-    func testImplied() throws {
+    func testImplicit() throws {
         let nes = Nes()
         let registers = nes.cpu.registers
         nes.cpu.registers.a = 0x00
@@ -37,7 +37,7 @@ final class PLATests: XCTestCase {
         testUnchangedRegisterFlags(nes, registers)
     }
     
-    func testImpliedZeroFlag() throws {
+    func testImplicitZeroFlag() throws {
         let nes = Nes()
         let registers = nes.cpu.registers
         nes.cpu.registers.a = 0x00
@@ -55,7 +55,7 @@ final class PLATests: XCTestCase {
         testUnchangedRegisterFlags(nes, registers)
     }
     
-    func testImpliedNegativeFlag() throws {
+    func testImplicitNegativeFlag() throws {
         let nes = Nes()
         let registers = nes.cpu.registers
         nes.cpu.registers.a = 0x00

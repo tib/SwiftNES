@@ -28,6 +28,17 @@ final class Cpu {
         totalCycles = 0
     }
 
+    func load(_ program: [UInt8]) -> Address {
+        guard program.count > 2 else { fatalError("Couldn't load program.") }
+        
+        let address = Address(program[0] | program[1] << 8)
+       
+        for (i, data) in program.dropFirst(2).enumerated() {
+            bus.writeByte(data, to: address + Address(i))
+        }
+        return address
+    }
+
     func execute(cycles: Int) {
         while totalCycles < cycles {
             let opcodeByte = fetch()
@@ -36,7 +47,7 @@ final class Cpu {
                 return
             }
             call(opcode.instruction, opcode.addressingMode)
-            print(opcode.value.hex, registers, ", ", totalCycles)
+            print(opcode, opcode.value.hex, registers, ", ", totalCycles)
         }
     }
 

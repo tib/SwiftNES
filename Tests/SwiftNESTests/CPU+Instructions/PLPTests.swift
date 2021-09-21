@@ -10,7 +10,7 @@ import XCTest
 
 final class PLPTests: XCTestCase {
 
-    func testImplied() throws {
+    func testImplicit() throws {
         let nes = Nes()
         nes.cpu.registers.sp = 0xFC
         nes.memory.storage[0x01FC] = 0x42

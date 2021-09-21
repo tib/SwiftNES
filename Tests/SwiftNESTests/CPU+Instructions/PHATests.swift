@@ -20,7 +20,7 @@ final class PHATests: XCTestCase {
         XCTAssertEqual(nes.cpu.registers.overflowFlag, registers.overflowFlag)
     }
     
-    func testImplied() throws {
+    func testImplicit() throws {
         let nes = Nes()
         let registers = nes.cpu.registers
         nes.cpu.registers.a = 0x42
