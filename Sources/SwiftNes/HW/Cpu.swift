@@ -46,7 +46,7 @@ final class Cpu {
                 print("Invalid opcode byte `\(opcodeByte.hex)`")
                 return
             }
-            call(opcode.instruction, opcode.addressingMode)
+            totalCycles += call(opcode.instruction, opcode.addressingMode)
             print(opcode, opcode.value.hex, registers, ", ", totalCycles)
         }
     }
@@ -58,7 +58,6 @@ final class Cpu {
     /// This operation costs a single clock cycle
     func readByte(_ address: Address) -> Byte {
         let byte = bus.readByte(from: address)
-        totalCycles += 1
         return byte
     }
     
@@ -67,19 +66,16 @@ final class Cpu {
     /// This operation costs two clock cycles
     func readWord(_ address: Address) -> Word {
         let word = Word(bus.readByte(from: address)) | Word(bus.readByte(from: address + 1)) << 8
-        totalCycles += 2
         return word
     }
     
     func writeByte(_ data: Byte, to address: Address) {
         bus.writeByte(data, to: address)
-        totalCycles += 1
     }
     
     func writeWord(_ data: Word, to address: Address) {
         bus.writeByte(UInt8(data & 0xFF), to: address)
         bus.writeByte(UInt8(data >> 8), to: address + 1)
-        totalCycles += 2
     }
     
     /// fetch the current program counter & incremnet the pc register

@@ -164,8 +164,17 @@ extension Cpu {
 
     // MARK: - instruction calls
 
-    /// call the appropriate instruction handler using the given addressing mode
-    func call(_ instruction: Instruction, _ addressingMode: AddressingMode) {
+    ///
+    /// Calls the appropriate instruction handler using the given addressing mode
+    ///
+    /// - Parameters:
+    ///     - instruction: The Instruction to perform
+    ///     - addressingMode: The associated addressing mode for the operation
+    ///
+    /// - Returns:
+    ///     The number of cycles required to perform the given instruction
+    ///
+    func call(_ instruction: Instruction, _ addressingMode: AddressingMode) -> Int {
         switch instruction {
         case .invalid: return invalid(addressingMode)
         case .lda: return lda(addressingMode)
@@ -189,415 +198,530 @@ extension Cpu {
         case .ora: return ora(addressingMode)
         case .bit: return bit(addressingMode)
         case .adc: return adc(addressingMode)
-        case .sbc: return
-        case .cmp: return
-        case .cpx: return
-        case .cpy: return
-        case .inc: return
+        case .sbc: return 0
+        case .cmp: return 0
+        case .cpx: return 0
+        case .cpy: return 0
+        case .inc: return 0
         case .inx: return inx(addressingMode)
         case .iny: return iny(addressingMode)
-        case .dec: return
+        case .dec: return 0
         case .dex: return dex(addressingMode)
         case .dey: return dey(addressingMode)
-        case .asl: return
-        case .lsr: return
-        case .rol: return
-        case .ror: return
+        case .asl: return 0
+        case .lsr: return 0
+        case .rol: return 0
+        case .ror: return 0
         case .jmp: return jmp(addressingMode)
         case .jsr: return jsr(addressingMode)
         case .rts: return rts(addressingMode)
-        case .bcc: return
-        case .bcs: return
-        case .beq: return
-        case .bmi: return
-        case .bne: return
-        case .bpl: return
-        case .bvc: return
-        case .bvs: return
-        case .clc: return
-        case .cld: return
-        case .cli: return
-        case .clv: return
-        case .sec: return
-        case .sed: return
-        case .sei: return
+        case .bcc: return 0
+        case .bcs: return 0
+        case .beq: return 0
+        case .bmi: return 0
+        case .bne: return 0
+        case .bpl: return 0
+        case .bvc: return 0
+        case .bvs: return 0
+        case .clc: return 0
+        case .cld: return 0
+        case .cli: return 0
+        case .clv: return 0
+        case .sec: return 0
+        case .sed: return 0
+        case .sei: return 0
         case .brk: return brk(addressingMode)
         case .nop: return nop(addressingMode)
-        case .rti: return
+        case .rti: return 0
         }
     }
     
     // MARK: - instruction handlers
     
-    func brk(_ addressingMode: AddressingMode) {
+    func brk(_ addressingMode: AddressingMode) -> Int {
         print("!!! BRK instruction")
+        return 0
     }
     
-    func invalid(_ addressingMode: AddressingMode) {
+    func invalid(_ addressingMode: AddressingMode) -> Int {
         print("Invalid instruction")
+        return 0
     }
     
-    func nop(_ addressingMode: AddressingMode) {
+    func nop(_ addressingMode: AddressingMode) -> Int {
         print("No operation")
+        return 0
     }
 
-    func lda(_ addressingMode: AddressingMode) {
+    func lda(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        
         switch addressingMode {
         case .immediate:
+            cycles = 2
             registers.a = fetch()
         case .zeroPage:
+            cycles = 3
             registers.a = readByte(fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             registers.a = readByte(fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             registers.a = readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            registers.a = readByte(fetchAbsoluteXAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a = readByte(fetchAbsoluteXAddress(cycles: &cycles))
         case .absoluteY:
-            registers.a = readByte(fetchAbsoluteYAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a = readByte(fetchAbsoluteYAddress(cycles: &cycles))
         case .indexedIndirect:
+            cycles = 6
             registers.a = readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            registers.a = readByte(fetchIndirectIndexedAddress())
+            cycles = 5 // +1 if page crossed
+            registers.a = readByte(fetchIndirectIndexedAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
         updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
     }
     
-    func ldx(_ addressingMode: AddressingMode) {
+    func ldx(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        
         switch addressingMode {
         case .immediate:
+            cycles = 2
             registers.x = fetch()
         case .zeroPage:
+            cycles = 3
             registers.x = readByte(fetchZeroPageAddress())
         case .zeroPageY:
+            cycles = 4
             registers.x = readByte(fetchZeroPageYAddress())
         case .absolute:
+            cycles = 4
             registers.x = readByte(fetchAbsoluteAddress())
         case .absoluteY:
-            registers.x = readByte(fetchAbsoluteYAddress())
+            cycles = 4 // +1 if page crossed
+            registers.x = readByte(fetchAbsoluteYAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
         updateZeroAndSignFlagsUsing(registers.x)
+        return cycles
     }
     
-    func ldy(_ addressingMode: AddressingMode) {
+    func ldy(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+
         switch addressingMode {
         case .immediate:
+            cycles = 2
             registers.y = fetch()
         case .zeroPage:
+            cycles = 3
             registers.y = readByte(fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             registers.y = readByte(fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             registers.y = readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            registers.y = readByte(fetchAbsoluteXAddress())
+            cycles = 4 // +1 if page crossed
+            registers.y = readByte(fetchAbsoluteXAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
         updateZeroAndSignFlagsUsing(registers.y)
+        return cycles
     }
     
-    func sta(_ addressingMode: AddressingMode) {
+    func sta(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
         switch addressingMode {
         case .zeroPage:
+            cycles = 3
             writeByte(registers.a, to: fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             writeByte(registers.a, to: fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             writeByte(registers.a, to: fetchAbsoluteAddress())
         case .absoluteX:
+            cycles = 5
             writeByte(registers.a, to: fetchAbsoluteXAddress())
         case .absoluteY:
+            cycles = 5
             writeByte(registers.a, to: fetchAbsoluteYAddress())
         case .indexedIndirect:
+            cycles = 6
             writeByte(registers.a, to: fetchIndexedIndirectAddress())
         case .indirectIndexed:
+            cycles = 6
             writeByte(registers.a, to: fetchIndirectIndexedAddress())
         default:
-            return // no action
+            return 0
         }
+        return cycles
     }
     
-    func stx(_ addressingMode: AddressingMode) {
+    func stx(_ addressingMode: AddressingMode) -> Int {
         switch addressingMode {
         case .zeroPage:
             writeByte(registers.x, to: fetchZeroPageAddress())
+            return 3
         case .zeroPageY:
             writeByte(registers.x, to: fetchZeroPageYAddress())
+            return 4
         case .absolute:
             writeByte(registers.x, to: fetchAbsoluteAddress())
+            return 4
         default:
-            return // no action
+            return 0
         }
     }
     
-    func sty(_ addressingMode: AddressingMode) {
+    func sty(_ addressingMode: AddressingMode) -> Int {
         switch addressingMode {
         case .zeroPage:
             writeByte(registers.y, to: fetchZeroPageAddress())
+            return 3
         case .zeroPageX:
             writeByte(registers.y, to: fetchZeroPageXAddress())
+            return 4
         case .absolute:
             writeByte(registers.y, to: fetchAbsoluteAddress())
+            return 4
         default:
-            return // no action
+            return 0
         }
     }
     
-    func adc(_ addressingMode: AddressingMode) {
+    func adc(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
         let value: Byte
-
         switch addressingMode {
         case .immediate:
+            cycles = 2
             value = fetch()
         case .zeroPage:
+            cycles = 3
             value = readByte(fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             value = readByte(fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             value = readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            value = readByte(fetchAbsoluteXAddress())
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteXAddress(cycles: &cycles))
         case .absoluteY:
-            value = readByte(fetchAbsoluteYAddress())
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteYAddress(cycles: &cycles))
         case .indexedIndirect:
+            cycles = 6
             value = readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            value = readByte(fetchIndirectIndexedAddress())
+            cycles = 5 // +1 if page crossed
+            value = readByte(fetchIndirectIndexedAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
-        
         /// add the value to the accumulator and add plus one if carry flag is active
         let result = UInt16(registers.a) + UInt16(value) + UInt16(registers.carryFlag ? 1 : 0)
-
         /// calculate new flags
         registers.carryFlag = result & 0xFF00 > 0
         registers.zeroFlag = result & 0x00FF == 0
         registers.signFlag = result & 0x0080 > 0
         registers.overflowFlag = ((result ^ UInt16(registers.a)) & (result ^ UInt16(value)) & 0x0080) > UInt16(0)
-        
         /// set the result
         registers.a = UInt8(result & UInt16(0xFF))
+        return cycles
     }
     
-    func asl(_ addressingMode: AddressingMode) {
-        
+    func asl(_ addressingMode: AddressingMode) -> Int {
+        0
     }
     
-    func jmp(_ addressingMode: AddressingMode) {
+    func jmp(_ addressingMode: AddressingMode) -> Int {
         switch addressingMode {
         case .absolute:
             registers.pc = fetchAbsoluteAddress()
+            return 3
         case .indirect:
             registers.pc = readWord(fetchAbsoluteAddress())
+            return 5
         default:
-            return // no action
+            return 0
         }
     }
     
-    func jsr(_ addressingMode: AddressingMode) {
-        guard addressingMode == .absolute else { return }
-        
+    func jsr(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .absolute else {
+            return 0
+        }
         let address = fetchAbsoluteAddress()
         pushWordToStack(registers.pc - 1)
-        /// +1 cycle
         registers.pc = address
-        totalCycles += 1
+        return 6
     }
     
-    func rts(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func rts(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         let address = popWordFromStack()
-        totalCycles += 2
         registers.pc = address + 1
+        return 6
     }
     
-    func tsx(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func tsx(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.x = registers.sp
-        totalCycles += 1
         updateZeroAndSignFlagsUsing(registers.x)
+        return 2
     }
     
-    func txs(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func txs(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.sp = registers.x
-        totalCycles += 1
+        return 2
     }
     
-    func pha(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func pha(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         pushByteToStack(registers.a)
+        return 3
     }
     
-    func php(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func php(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         pushByteToStack(registers.p)
+        return 3
     }
     
-    func pla(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func pla(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.a = popByteFromStack()
         updateZeroAndSignFlagsUsing(registers.a)
+        return 4
     }
     
-    func plp(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
+    func plp(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         
         registers.p = popByteFromStack()
+        return 4
     }
     
-    func and(_ addressingMode: AddressingMode) {
+    func and(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
         switch addressingMode {
         case .immediate:
+            cycles = 2
             registers.a &= fetch()
         case .zeroPage:
+            cycles = 3
             registers.a &= readByte(fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             registers.a &= readByte(fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             registers.a &= readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            registers.a &= readByte(fetchAbsoluteXAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a &= readByte(fetchAbsoluteXAddress(cycles: &cycles))
         case .absoluteY:
-            registers.a &= readByte(fetchAbsoluteYAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a &= readByte(fetchAbsoluteYAddress(cycles: &cycles))
         case .indexedIndirect:
+            cycles = 6
             registers.a &= readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            registers.a &= readByte(fetchIndirectIndexedAddress())
+            cycles = 5 // +1 if page crossed
+            registers.a &= readByte(fetchIndirectIndexedAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
         updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
     }
     
-    func ora(_ addressingMode: AddressingMode) {
+    func ora(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
         switch addressingMode {
         case .immediate:
+            cycles = 2
             registers.a |= fetch()
         case .zeroPage:
+            cycles = 3
             registers.a |= readByte(fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             registers.a |= readByte(fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             registers.a |= readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            registers.a |= readByte(fetchAbsoluteXAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a |= readByte(fetchAbsoluteXAddress(cycles: &cycles))
         case .absoluteY:
-            registers.a |= readByte(fetchAbsoluteYAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a |= readByte(fetchAbsoluteYAddress(cycles: &cycles))
         case .indexedIndirect:
+            cycles = 6
             registers.a |= readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            registers.a |= readByte(fetchIndirectIndexedAddress())
+            cycles = 5 // +1 if page crossed
+            registers.a |= readByte(fetchIndirectIndexedAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
         updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
     }
     
-    func eor(_ addressingMode: AddressingMode) {
+    func eor(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
         switch addressingMode {
         case .immediate:
+            cycles = 2
             registers.a ^= fetch()
         case .zeroPage:
+            cycles = 3
             registers.a ^= readByte(fetchZeroPageAddress())
         case .zeroPageX:
+            cycles = 4
             registers.a ^= readByte(fetchZeroPageXAddress())
         case .absolute:
+            cycles = 4
             registers.a ^= readByte(fetchAbsoluteAddress())
         case .absoluteX:
-            registers.a ^= readByte(fetchAbsoluteXAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a ^= readByte(fetchAbsoluteXAddress(cycles: &cycles))
         case .absoluteY:
-            registers.a ^= readByte(fetchAbsoluteYAddress())
+            cycles = 4 // +1 if page crossed
+            registers.a ^= readByte(fetchAbsoluteYAddress(cycles: &cycles))
         case .indexedIndirect:
+            cycles = 6
             registers.a ^= readByte(fetchIndexedIndirectAddress())
         case .indirectIndexed:
-            registers.a ^= readByte(fetchIndirectIndexedAddress())
+            cycles = 5 // +1 if page crossed
+            registers.a ^= readByte(fetchIndirectIndexedAddress(cycles: &cycles))
         default:
-            return // no action
+            return 0
         }
         updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
     }
     
-    func bit(_ addressingMode: AddressingMode) {
+    func bit(_ addressingMode: AddressingMode) -> Int {
+        let cycles: Int
         let value: UInt8
         switch addressingMode {
         case .zeroPage:
+            cycles = 3
             value = readByte(fetchZeroPageAddress())
         case .absolute:
+            cycles = 4
             value = readByte(fetchAbsoluteAddress())
         default:
-            return // no action
+            return 0
         }
         registers.zeroFlag = (registers.a & value) > 0
         registers.overflowFlag = (value & 0b01000000) > 0
         registers.signFlag = (value & 0b10000000) > 0
+        return cycles
     }
     
-    func tax(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func tax(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.x = registers.a
         updateZeroAndSignFlagsUsing(registers.x)
+        return 2
     }
     
-    func tay(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func tay(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.y = registers.a
         updateZeroAndSignFlagsUsing(registers.y)
+        return 2
     }
     
-    func txa(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func txa(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.a = registers.x
         updateZeroAndSignFlagsUsing(registers.a)
+        return 2
     }
     
-    func tya(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-        
+    func tya(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.a = registers.y
         updateZeroAndSignFlagsUsing(registers.a)
+        return 2
     }
     
-    func inx(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-
+    func inx(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.x = registers.x &+ 1
         updateZeroAndSignFlagsUsing(registers.x)
+        return 2
     }
     
-    func iny(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-
+    func iny(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.y = registers.y &+ 1
         updateZeroAndSignFlagsUsing(registers.y)
+        return 2
     }
     
-    func dex(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-
+    func dex(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.x = registers.x &- 1
         updateZeroAndSignFlagsUsing(registers.x)
+        return 2
     }
     
-    func dey(_ addressingMode: AddressingMode) {
-        guard addressingMode == .implicit else { return }
-
+    func dey(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
         registers.y = registers.y &- 1
         updateZeroAndSignFlagsUsing(registers.y)
+        return 2
     }
 }

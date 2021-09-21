@@ -108,7 +108,7 @@ final class ADCTests: XCTestCase {
         testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, 4)
     }
-    
+
     func testCarryFlagAddition() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true

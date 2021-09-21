@@ -29,7 +29,7 @@ final class JSRTests: XCTestCase {
         nes.memory.storage[0x0011] = nes.cpu.opcode(.lda, .immediate)
         nes.memory.storage[0x0012] = 0xcf
         
-        let cycles = 6 + 2
+        let cycles = 8
         nes.start(cycles: cycles)
         XCTAssertEqual(nes.cpu.registers.a, 0xcf)
         XCTAssertNotEqual(nes.cpu.registers.sp, sp)
