@@ -176,7 +176,6 @@ extension Cpu {
     ///
     func call(_ instruction: Instruction, _ addressingMode: AddressingMode) -> Int {
         switch instruction {
-        case .invalid: return invalid(addressingMode)
         case .lda: return lda(addressingMode)
         case .ldx: return ldx(addressingMode)
         case .ldy: return ldy(addressingMode)
@@ -233,26 +232,41 @@ extension Cpu {
         case .brk: return brk(addressingMode)
         case .nop: return nop(addressingMode)
         case .rti: return 0
+        case .invalid: return invalid(addressingMode)
         }
     }
     
     // MARK: - instruction handlers
-    
-    func brk(_ addressingMode: AddressingMode) -> Int {
-        print("!!! BRK instruction")
-        return 0
-    }
-    
+
+    /// Generic invalid instruction handler, currently just a fatal error.
     func invalid(_ addressingMode: AddressingMode) -> Int {
-        print("Invalid instruction")
-        return 0
-    }
-    
-    func nop(_ addressingMode: AddressingMode) -> Int {
-        print("No operation")
-        return 0
+        fatalError("Invalid instruction.")
     }
 
+    ///
+    /// The BRK instruction forces the generation of an interrupt request.
+    ///
+    /// The program counter and processor status are pushed on the stack then the IRQ interrupt vector at $FFFE/F is loaded into the PC and the break flag in the status set to one.
+    ///
+    /// The interpretation of a BRK depends on the operating system.
+    /// On the BBC Microcomputer it is used by language ROMs to signal run time errors but it could be used for other purposes (e.g. calling operating system functions, etc.).
+    ///
+    func brk(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        return 7
+    }
+    
+    /// The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.
+    func nop(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        return 2
+    }
+
+    /// Loads a byte of memory into the accumulator setting the zero and negative flags as appropriate.
     func lda(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         
@@ -288,6 +302,7 @@ extension Cpu {
         return cycles
     }
     
+    /// Loads a byte of memory into the X register setting the zero and negative flags as appropriate.
     func ldx(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         
@@ -314,6 +329,7 @@ extension Cpu {
         return cycles
     }
     
+    /// Loads a byte of memory into the Y register setting the zero and negative flags as appropriate.
     func ldy(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
 
@@ -340,6 +356,7 @@ extension Cpu {
         return cycles
     }
     
+    /// Stores the contents of the accumulator into memory.
     func sta(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         switch addressingMode {
@@ -370,6 +387,7 @@ extension Cpu {
         return cycles
     }
     
+    /// Stores the contents of the X register into memory.
     func stx(_ addressingMode: AddressingMode) -> Int {
         switch addressingMode {
         case .zeroPage:
@@ -386,6 +404,7 @@ extension Cpu {
         }
     }
     
+    /// Stores the contents of the Y register into memory.
     func sty(_ addressingMode: AddressingMode) -> Int {
         switch addressingMode {
         case .zeroPage:
@@ -402,6 +421,11 @@ extension Cpu {
         }
     }
     
+    ///
+    /// This instruction adds the contents of a memory location to the accumulator together with the carry bit.
+    ///
+    /// If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
+    ///
     func adc(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         let value: Byte
@@ -445,10 +469,7 @@ extension Cpu {
         return cycles
     }
     
-    func asl(_ addressingMode: AddressingMode) -> Int {
-        0
-    }
-    
+    /// Sets the program counter to the address specified by the operand.
     func jmp(_ addressingMode: AddressingMode) -> Int {
         switch addressingMode {
         case .absolute:
@@ -462,6 +483,7 @@ extension Cpu {
         }
     }
     
+    /// Pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
     func jsr(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .absolute else {
             return 0
@@ -472,6 +494,11 @@ extension Cpu {
         return 6
     }
     
+    ///
+    /// The RTS instruction is used at the end of a subroutine to return to the calling routine.
+    ///
+    /// It pulls the program counter (minus one) from the stack.
+    ///
     func rts(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -481,6 +508,7 @@ extension Cpu {
         return 6
     }
     
+    /// Copies the current contents of the stack register into the X register and sets the zero and negative flags as appropriate.
     func tsx(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -490,6 +518,7 @@ extension Cpu {
         return 2
     }
     
+    /// Copies the current contents of the X register into the stack register.
     func txs(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -498,6 +527,7 @@ extension Cpu {
         return 2
     }
     
+    /// Pushes a copy of the accumulator on to the stack.
     func pha(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -506,6 +536,7 @@ extension Cpu {
         return 3
     }
     
+    /// Pushes a copy of the status flags on to the stack.
     func php(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -514,6 +545,11 @@ extension Cpu {
         return 3
     }
     
+    ///
+    /// Pulls an 8 bit value from the stack and into the accumulator.
+    ///
+    /// The zero and negative flags are set as appropriate.
+    ///
     func pla(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -523,6 +559,11 @@ extension Cpu {
         return 4
     }
     
+    ///
+    /// Pulls an 8 bit value from the stack and into the processor flags.
+    ///
+    /// The flags will take on new states as determined by the value pulled.
+    ///
     func plp(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -532,6 +573,7 @@ extension Cpu {
         return 4
     }
     
+    /// A logical AND is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
     func and(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         switch addressingMode {
@@ -566,6 +608,7 @@ extension Cpu {
         return cycles
     }
     
+    /// An inclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
     func ora(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         switch addressingMode {
@@ -600,6 +643,7 @@ extension Cpu {
         return cycles
     }
     
+    /// An exclusive OR is performed, bit by bit, on the accumulator contents using the contents of a byte of memory.
     func eor(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
         switch addressingMode {
@@ -634,6 +678,12 @@ extension Cpu {
         return cycles
     }
     
+    ///
+    /// This instructions is used to test if one or more bits are set in a target memory location.
+    ///
+    /// The mask pattern in A is ANDed with the value in memory to set or clear the zero flag, but the result is not kept.
+    /// Bits 7 and 6 of the value from memory are copied into the N and V flags.
+    ///
     func bit(_ addressingMode: AddressingMode) -> Int {
         let cycles: Int
         let value: UInt8
@@ -653,6 +703,7 @@ extension Cpu {
         return cycles
     }
     
+    /// Copies the current contents of the accumulator into the X register and sets the zero and negative flags as appropriate.
     func tax(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -662,6 +713,7 @@ extension Cpu {
         return 2
     }
     
+    /// Copies the current contents of the accumulator into the Y register and sets the zero and negative flags as appropriate.
     func tay(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -671,6 +723,7 @@ extension Cpu {
         return 2
     }
     
+    /// Copies the current contents of the X register into the accumulator and sets the zero and negative flags as appropriate.
     func txa(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -680,6 +733,7 @@ extension Cpu {
         return 2
     }
     
+    /// Copies the current contents of the Y register into the accumulator and sets the zero and negative flags as appropriate.
     func tya(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -689,6 +743,7 @@ extension Cpu {
         return 2
     }
     
+    /// Adds one to the X register setting the zero and negative flags as appropriate.
     func inx(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -698,6 +753,7 @@ extension Cpu {
         return 2
     }
     
+    /// Adds one to the Y register setting the zero and negative flags as appropriate.
     func iny(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -707,6 +763,7 @@ extension Cpu {
         return 2
     }
     
+    /// Subtracts one from the X register setting the zero and negative flags as appropriate.
     func dex(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
@@ -716,6 +773,7 @@ extension Cpu {
         return 2
     }
     
+    /// Subtracts one from the Y register setting the zero and negative flags as appropriate.
     func dey(_ addressingMode: AddressingMode) -> Int {
         guard addressingMode == .implicit else {
             return 0
