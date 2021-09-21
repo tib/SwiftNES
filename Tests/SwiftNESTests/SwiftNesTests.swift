@@ -9,7 +9,7 @@ import XCTest
 @testable import SwiftNes
 
 final class SwiftNesTests: XCTestCase {
-
+    
     func testLoadProgram() throws {
         /*
          = $ 0004
@@ -39,10 +39,27 @@ final class SwiftNesTests: XCTestCase {
         print(nes.cpu.load(program))
         nes.cpu.registers.pc = nes.cpu.load(program)
         nes.start(cycles: 32)
-//        XCTAssertTrue(nes.cpu.registers.overflowFlag)
-//        XCTAssertTrue(nes.cpu.registers.signFlag)
-//        XCTAssertTrue(nes.cpu.registers.zeroFlag)
-//        XCTAssertEqual(nes.cpu.registers.a, 0xCC)
-//        XCTAssertEqual(nes.cpu.totalCycles, 3)
+    }
+    
+    func testProgram2() throws {
+        /*
+         * = 0004
+
+         lda #00
+         sta $42
+
+         start
+         inc $42
+         ldx $42
+         inx
+         jmp start
+         */
+        let nes = Nes()
+        let program: [UInt8] = [0x04, 0x00, 0xA9, 0x00, 0x85, 0x42, 0xE6, 0x42, 0xA6, 0x42, 0xE8, 0x4C, 0x08, 0x00]
+        print(nes.cpu.load(program))
+        nes.cpu.registers.pc = nes.cpu.load(program)
+        nes.start(cycles: 32)
+        XCTAssertEqual(nes.cpu.registers.x, 3)
+        XCTAssertEqual(nes.memory.storage[0x42], 3)
     }
 }
