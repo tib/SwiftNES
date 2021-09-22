@@ -198,7 +198,7 @@ extension Cpu {
         case .bit: return bit(addressingMode)
         case .adc: return adc(addressingMode)
         case .sbc: return 0
-        case .cmp: return 0
+        case .cmp: return cmp(addressingMode)
         case .cpx: return 0
         case .cpy: return 0
         case .inc: return inc(addressingMode)
@@ -969,6 +969,47 @@ extension Cpu {
         }
         registers.overflowFlag = false
         return 2
+    }
+
+    /// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
+    func cmp(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        let value: Byte
+        switch addressingMode {
+        case .immediate:
+            cycles = 2
+            value = fetch()
+        case .zeroPage:
+            cycles = 3
+            value = readByte(fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 4
+            value = readByte(fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 4
+            value = readByte(fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteXAddress(cycles: &cycles))
+        case .absoluteY:
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteYAddress(cycles: &cycles))
+        case .indexedIndirect:
+            cycles = 6
+            value = readByte(fetchIndexedIndirectAddress())
+        case .indirectIndexed:
+            cycles = 5 // +1 if page crossed
+            value = readByte(fetchIndirectIndexedAddress(cycles: &cycles))
+        default:
+            return 0
+        }
+        
+        let tmp = registers.a &- value
+        registers.signFlag = (tmp & 0b10000000) > 0
+        registers.zeroFlag = registers.a == value
+        registers.carryFlag = registers.a >= value
+        
+        return cycles
     }
     
 }
