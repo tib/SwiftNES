@@ -41,6 +41,7 @@ final class SwiftNesTests: XCTestCase {
         nes.start(cycles: 32)
     }
     
+    /// increment values
     func testProgram2() throws {
         /*
          * = 0004
@@ -61,5 +62,27 @@ final class SwiftNesTests: XCTestCase {
         nes.start(cycles: 32)
         XCTAssertEqual(nes.cpu.registers.x, 3)
         XCTAssertEqual(nes.memory.storage[0x42], 3)
+    }
+    
+    /// for loop 3 times, then store value 20 in register x
+    func testProgram3() throws {
+        /*
+         * = 0004
+
+         lda #0
+         clc
+         loop
+           adc #8
+           cmp #24
+           bne loop
+         ldx #20
+         */
+        let nes = Nes()
+        let program: [UInt8] = [0x04, 0x00, 0xA9, 0x00, 0x18, 0x69, 0x08, 0xC9, 0x18, 0xD0, 0xFA, 0xA2, 0x14]
+        print(nes.cpu.load(program))
+        nes.cpu.registers.pc = nes.cpu.load(program)
+        nes.start(cycles: 26)
+        XCTAssertEqual(nes.cpu.registers.a, 24)
+        XCTAssertEqual(nes.cpu.registers.x, 20)
     }
 }

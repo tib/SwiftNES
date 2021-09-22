@@ -199,8 +199,8 @@ extension Cpu {
         case .adc: return adc(addressingMode)
         case .sbc: return 0
         case .cmp: return cmp(addressingMode)
-        case .cpx: return 0
-        case .cpy: return 0
+        case .cpx: return cpx(addressingMode)
+        case .cpy: return cpy(addressingMode)
         case .inc: return inc(addressingMode)
         case .inx: return inx(addressingMode)
         case .iny: return iny(addressingMode)
@@ -971,6 +971,14 @@ extension Cpu {
         return 2
     }
 
+    /// performs a compare instruction using a given value
+    private func performCompare(using register: UInt8, with value: UInt8) {
+        let tmp = register &- value
+        registers.signFlag = (tmp & 0b10000000) > 0
+        registers.zeroFlag = register == value
+        registers.carryFlag = register >= value
+    }
+    
     /// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
     func cmp(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
@@ -1003,12 +1011,47 @@ extension Cpu {
         default:
             return 0
         }
-        
-        let tmp = registers.a &- value
-        registers.signFlag = (tmp & 0b10000000) > 0
-        registers.zeroFlag = registers.a == value
-        registers.carryFlag = registers.a >= value
-        
+        performCompare(using: registers.a, with: value)
+        return cycles
+    }
+    
+    func cpx(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        let value: Byte
+        switch addressingMode {
+        case .immediate:
+            cycles = 2
+            value = fetch()
+        case .zeroPage:
+            cycles = 3
+            value = readByte(fetchZeroPageAddress())
+        case .absolute:
+            cycles = 4
+            value = readByte(fetchAbsoluteAddress())
+        default:
+            return 0
+        }
+        performCompare(using: registers.x, with: value)
+        return cycles
+    }
+    
+    func cpy(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        let value: Byte
+        switch addressingMode {
+        case .immediate:
+            cycles = 2
+            value = fetch()
+        case .zeroPage:
+            cycles = 3
+            value = readByte(fetchZeroPageAddress())
+        case .absolute:
+            cycles = 4
+            value = readByte(fetchAbsoluteAddress())
+        default:
+            return 0
+        }
+        performCompare(using: registers.y, with: value)
         return cycles
     }
     
