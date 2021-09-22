@@ -11,18 +11,7 @@ extension Cpu {
 
     /// http://www.obelisk.me.uk/6502/registers.html
     struct Registers {
- 
-        /*
-        0000 0001 - Carry Flag
-        0000 0010 - Zero Flag
-        0000 0100 - Interrupt Disable
-        0000 1000 - Decimal Mode
-        0001 0000 - Unused
-        0010 0000 - Break Command
-        0100 0000 - Overflow Flag
-        1000 0000 - Negative Flag
-        */
-        
+         
         /// status flags
         var p: Byte
         /// accumulator

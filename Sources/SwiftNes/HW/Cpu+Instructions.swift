@@ -214,21 +214,21 @@ extension Cpu {
         case .jmp: return jmp(addressingMode)
         case .jsr: return jsr(addressingMode)
         case .rts: return rts(addressingMode)
-        case .bcc: return 0
-        case .bcs: return 0
-        case .beq: return 0
-        case .bmi: return 0
-        case .bne: return 0
-        case .bpl: return 0
-        case .bvc: return 0
-        case .bvs: return 0
-        case .clc: return 0
-        case .cld: return 0
-        case .cli: return 0
-        case .clv: return 0
-        case .sec: return 0
-        case .sed: return 0
-        case .sei: return 0
+        case .bcc: return bcc(addressingMode)
+        case .bcs: return bcs(addressingMode)
+        case .beq: return beq(addressingMode)
+        case .bmi: return bmi(addressingMode)
+        case .bne: return bne(addressingMode)
+        case .bpl: return bpl(addressingMode)
+        case .bvc: return bvc(addressingMode)
+        case .bvs: return bvs(addressingMode)
+        case .clc: return clc(addressingMode)
+        case .cld: return cld(addressingMode)
+        case .cli: return cli(addressingMode)
+        case .clv: return clv(addressingMode)
+        case .sec: return sec(addressingMode)
+        case .sed: return sed(addressingMode)
+        case .sei: return sei(addressingMode)
         case .brk: return brk(addressingMode)
         case .nop: return nop(addressingMode)
         case .rti: return 0
@@ -834,4 +834,141 @@ extension Cpu {
         updateZeroAndSignFlagsUsing(value)
         return cycles
     }
+    
+    // MARK: - branching
+    
+    // generic helper method for branching purposes
+    private func branch(if condition: Bool) -> Int {
+        let offsetByte = fetch()
+        if condition {
+            let originalAddress = registers.pc
+            if offsetByte & 0b10000000 > 0 {
+                registers.pc -= Address(128 - offsetByte & 0b01111111)
+            } else {
+                registers.pc += Address(offsetByte & 0b01111111)
+            }
+            if registers.pc >> 8 != originalAddress >> 8 {
+                return 5
+            }
+            return 3
+        }
+        return 2
+    }
+    
+    /// If the zero flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+    func beq(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: registers.zeroFlag)
+    }
+    
+    /// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+    func bne(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: !registers.zeroFlag)
+    }
+
+    func bcs(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: registers.carryFlag)
+    }
+    
+    func bcc(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: !registers.carryFlag)
+    }
+    
+    func bmi(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: registers.signFlag)
+    }
+    
+    func bpl(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: !registers.signFlag)
+    }
+    
+    func bvs(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: registers.overflowFlag)
+    }
+    
+    func bvc(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .relative else {
+            return 0
+        }
+        return branch(if: !registers.overflowFlag)
+    }
+    
+    // MARK: - status flag changes
+    
+    func clc(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.carryFlag = false
+        return 2
+    }
+    
+    func sec(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.carryFlag = true
+        return 2
+    }
+    
+    func cli(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.interruptFlag = false
+        return 2
+    }
+    
+    func sei(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.interruptFlag = true
+        return 2
+    }
+    
+    func cld(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.decimalFlag = false
+        return 2
+    }
+    
+    func sed(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.decimalFlag = true
+        return 2
+    }
+    
+    func clv(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.overflowFlag = false
+        return 2
+    }
+    
 }

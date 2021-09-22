@@ -27,21 +27,19 @@ extension Cpu {
     }
     
     // MARK: - fetch given address
-
+    
     func fetchZeroPageAddress() -> Address {
         Address(fetch())
     }
     
     func fetchZeroPageXAddress() -> Address {
         /// Add the fetched address using the overlfow operator (&+) to the x register value
-        /// +1 cycle
         let address = Address(fetch() &+ registers.x)
         return address
     }
     
     func fetchZeroPageYAddress() -> Address {
         /// Add the fetched address using the overlfow operator (&+) to the y register value
-        /// +1 cycle
         let address = Address(fetch() &+ registers.y)
         return address
     }
@@ -82,7 +80,6 @@ extension Cpu {
     
     func fetchIndexedIndirectAddress() -> Address {
         /// Add the fetched address using the overlfow operator (&+) to the x register value
-        /// +1 cycle
         let address = Address(fetch() &+ registers.x)
         let pointerAddress = readWord(address)
         return pointerAddress
