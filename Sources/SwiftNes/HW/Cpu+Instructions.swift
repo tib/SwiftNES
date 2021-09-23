@@ -207,7 +207,7 @@ extension Cpu {
         case .dec: return dec(addressingMode)
         case .dex: return dex(addressingMode)
         case .dey: return dey(addressingMode)
-        case .asl: return 0
+        case .asl: return asl(addressingMode)
         case .lsr: return 0
         case .rol: return 0
         case .ror: return 0
@@ -1098,6 +1098,42 @@ extension Cpu {
         registers.overflowFlag = ((UInt16(registers.a) ^ UInt16(value)) & (UInt16(registers.a) ^ result) & UInt16(0b10000000)) > 0
         registers.a = UInt8(result & UInt16(0xFF))
         updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
+    }
+    
+    private func performASL(on address: Address) {
+        let value = readByte(address)
+        registers.carryFlag = (value & 0b10000000) > 0
+        let newValue = value << 1
+        writeByte(newValue, to: address)
+        updateZeroAndSignFlagsUsing(newValue)
+    }
+    
+    func asl(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+                
+        switch addressingMode {
+        case .accumulator:
+            cycles = 2
+            registers.carryFlag = (registers.a & 0b10000000) > 0
+            registers.a = registers.a << 1
+            updateZeroAndSignFlagsUsing(registers.a)
+        case .zeroPage:
+            cycles = 5
+            performASL(on: fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 6
+            performASL(on: fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 6
+            performASL(on: fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 7
+            performASL(on: fetchAbsoluteXAddress())
+        default:
+            return 0
+        }
+
         return cycles
     }
 }
