@@ -197,7 +197,7 @@ extension Cpu {
         case .ora: return ora(addressingMode)
         case .bit: return bit(addressingMode)
         case .adc: return adc(addressingMode)
-        case .sbc: return 0
+        case .sbc: return sbc(addressingMode)
         case .cmp: return cmp(addressingMode)
         case .cpx: return cpx(addressingMode)
         case .cpy: return cpy(addressingMode)
@@ -419,54 +419,6 @@ extension Cpu {
         default:
             return 0
         }
-    }
-    
-    ///
-    /// This instruction adds the contents of a memory location to the accumulator together with the carry bit.
-    ///
-    /// If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
-    ///
-    func adc(_ addressingMode: AddressingMode) -> Int {
-        var cycles: Int
-        let value: Byte
-        switch addressingMode {
-        case .immediate:
-            cycles = 2
-            value = fetch()
-        case .zeroPage:
-            cycles = 3
-            value = readByte(fetchZeroPageAddress())
-        case .zeroPageX:
-            cycles = 4
-            value = readByte(fetchZeroPageXAddress())
-        case .absolute:
-            cycles = 4
-            value = readByte(fetchAbsoluteAddress())
-        case .absoluteX:
-            cycles = 4 // +1 if page crossed
-            value = readByte(fetchAbsoluteXAddress(cycles: &cycles))
-        case .absoluteY:
-            cycles = 4 // +1 if page crossed
-            value = readByte(fetchAbsoluteYAddress(cycles: &cycles))
-        case .indexedIndirect:
-            cycles = 6
-            value = readByte(fetchIndexedIndirectAddress())
-        case .indirectIndexed:
-            cycles = 5 // +1 if page crossed
-            value = readByte(fetchIndirectIndexedAddress(cycles: &cycles))
-        default:
-            return 0
-        }
-        /// add the value to the accumulator and add plus one if carry flag is active
-        let result = UInt16(registers.a) + UInt16(value) + UInt16(registers.carryFlag ? 1 : 0)
-        /// calculate new flags
-        registers.carryFlag = result & 0xFF00 > 0
-        registers.zeroFlag = result & 0x00FF == 0
-        registers.signFlag = result & 0x0080 > 0
-        registers.overflowFlag = ((result ^ UInt16(registers.a)) & (result ^ UInt16(value)) & 0x0080) > UInt16(0)
-        /// set the result
-        registers.a = UInt8(result & UInt16(0xFF))
-        return cycles
     }
     
     /// Sets the program counter to the address specified by the operand.
@@ -1055,4 +1007,97 @@ extension Cpu {
         return cycles
     }
     
+    ///
+    /// This instruction adds the contents of a memory location to the accumulator together with the carry bit.
+    ///
+    /// If overflow occurs the carry bit is set, this enables multiple byte addition to be performed.
+    ///
+    func adc(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        let value: Byte
+        switch addressingMode {
+        case .immediate:
+            cycles = 2
+            value = fetch()
+        case .zeroPage:
+            cycles = 3
+            value = readByte(fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 4
+            value = readByte(fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 4
+            value = readByte(fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteXAddress(cycles: &cycles))
+        case .absoluteY:
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteYAddress(cycles: &cycles))
+        case .indexedIndirect:
+            cycles = 6
+            value = readByte(fetchIndexedIndirectAddress())
+        case .indirectIndexed:
+            cycles = 5 // +1 if page crossed
+            value = readByte(fetchIndirectIndexedAddress(cycles: &cycles))
+        default:
+            return 0
+        }
+        /// add the value to the accumulator and add plus one if carry flag is active
+        let result = UInt16(registers.a) &+ UInt16(value) &+ UInt16(registers.carryFlag ? 1 : 0)
+        /// if the result overflows we set a carry flag
+        registers.carryFlag = result & 0xFF00 > 0
+        // N + N => N & P + P => P
+        registers.overflowFlag = (~(UInt16(registers.a) ^ UInt16(value)) & (UInt16(registers.a) ^ result) & UInt16(0b10000000)) > 0
+        registers.a = UInt8(result & UInt16(0xFF))
+        updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
+    }
+
+    ///
+    /// This instruction subtracts the contents of a memory location to the accumulator together with the not of the carry bit.
+    ///
+    /// If overflow occurs the carry bit is clear, this enables multiple byte subtraction to be performed.
+    ///
+    func sbc(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        let value: Byte
+        switch addressingMode {
+        case .immediate:
+            cycles = 2
+            value = fetch()
+        case .zeroPage:
+            cycles = 3
+            value = readByte(fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 4
+            value = readByte(fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 4
+            value = readByte(fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteXAddress(cycles: &cycles))
+        case .absoluteY:
+            cycles = 4 // +1 if page crossed
+            value = readByte(fetchAbsoluteYAddress(cycles: &cycles))
+        case .indexedIndirect:
+            cycles = 6
+            value = readByte(fetchIndexedIndirectAddress())
+        case .indirectIndexed:
+            cycles = 5 // +1 if page crossed
+            value = readByte(fetchIndirectIndexedAddress(cycles: &cycles))
+        default:
+            return 0
+        }
+        /// subtract the value from the accumulator and subtract one more if carry was zero
+        let result = UInt16(registers.a) &- UInt16(value) &- UInt16(registers.carryFlag ? 0 : 1)
+        /// if result does not overflow we set a carry flag
+        registers.carryFlag = result & 0xFF00 == 0
+        // N - P => N & P - N => P
+        registers.overflowFlag = ((UInt16(registers.a) ^ UInt16(value)) & (UInt16(registers.a) ^ result) & UInt16(0b10000000)) > 0
+        registers.a = UInt8(result & UInt16(0xFF))
+        updateZeroAndSignFlagsUsing(registers.a)
+        return cycles
+    }
 }
