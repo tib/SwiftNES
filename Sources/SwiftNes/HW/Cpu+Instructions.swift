@@ -208,7 +208,7 @@ extension Cpu {
         case .dex: return dex(addressingMode)
         case .dey: return dey(addressingMode)
         case .asl: return asl(addressingMode)
-        case .lsr: return 0
+        case .lsr: return lsr(addressingMode)
         case .rol: return 0
         case .ror: return 0
         case .jmp: return jmp(addressingMode)
@@ -1101,6 +1101,11 @@ extension Cpu {
         return cycles
     }
     
+    ///
+    /// Performs a logical left shift on a value under a given memory address.
+    /// It writes back the result into the same address.
+    /// Finally updates zero and sign register flags.
+    ///
     private func performASL(on address: Address) {
         let value = readByte(address)
         registers.carryFlag = (value & 0b10000000) > 0
@@ -1109,9 +1114,13 @@ extension Cpu {
         updateZeroAndSignFlagsUsing(newValue)
     }
     
+    ///
+    /// This operation shifts all the bits of the accumulator or memory contents one bit left.
+    /// Bit 0 is set to 0 and bit 7 is placed in the carry flag.
+    /// The effect of this operation is to multiply the memory contents by 2 (ignoring 2's complement considerations), setting the carry if the result will not fit in 8 bits.
+    ///
     func asl(_ addressingMode: AddressingMode) -> Int {
         var cycles: Int
-                
         switch addressingMode {
         case .accumulator:
             cycles = 2
@@ -1133,7 +1142,49 @@ extension Cpu {
         default:
             return 0
         }
-
+        return cycles
+    }
+    
+    ///
+    /// Performs a logical right shift on a value under a given memory address.
+    /// It writes back the result into the same address.
+    /// Finally updates zero and sign register flags.
+    ///
+    private func performLSR(on address: Address) {
+        let value = readByte(address)
+        registers.carryFlag = (value & 0b00000001) > 0
+        let newValue = value >> 1
+        writeByte(newValue, to: address)
+        updateZeroAndSignFlagsUsing(newValue)
+    }
+    
+    ///
+    /// Each of the bits in A or M is shift one place to the right.
+    /// The bit that was in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
+    ///
+    func lsr(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        switch addressingMode {
+        case .accumulator:
+            cycles = 2
+            registers.carryFlag = (registers.a & 0b00000001) > 0
+            registers.a = registers.a >> 1
+            updateZeroAndSignFlagsUsing(registers.a)
+        case .zeroPage:
+            cycles = 5
+            performLSR(on: fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 6
+            performLSR(on: fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 6
+            performLSR(on: fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 7
+            performLSR(on: fetchAbsoluteXAddress())
+        default:
+            return 0
+        }
         return cycles
     }
 }
