@@ -209,8 +209,8 @@ extension Cpu {
         case .dey: return dey(addressingMode)
         case .asl: return asl(addressingMode)
         case .lsr: return lsr(addressingMode)
-        case .rol: return 0
-        case .ror: return 0
+        case .rol: return rol(addressingMode)
+        case .ror: return ror(addressingMode)
         case .jmp: return jmp(addressingMode)
         case .jsr: return jsr(addressingMode)
         case .rts: return rts(addressingMode)
@@ -1182,6 +1182,92 @@ extension Cpu {
         case .absoluteX:
             cycles = 7
             performLSR(on: fetchAbsoluteXAddress())
+        default:
+            return 0
+        }
+        return cycles
+    }
+    
+    ///
+    /// Performs a logical right shift on a value under a given memory address.
+    /// It writes back the result into the same address.
+    /// Finally updates zero and sign register flags.
+    ///
+    private func performROL(on address: Address) {
+        let value = readByte(address)
+        let oldCarryBit = UInt8(registers.carryFlag ? 1 : 0)
+        registers.carryFlag = (value & 0b10000000) > 0
+        var newValue = value << 1
+        newValue = (newValue & 0b11111110) | oldCarryBit
+        writeByte(newValue, to: address)
+        updateZeroAndSignFlagsUsing(newValue)
+    }
+    
+    func rol(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        switch addressingMode {
+        case .accumulator:
+            cycles = 2
+            let oldCarryBit = UInt8(registers.carryFlag ? 1 : 0)
+            registers.carryFlag = (registers.a & 0b10000000) > 0
+            registers.a = registers.a << 1
+            registers.a = (registers.a & 0b11111110) | oldCarryBit
+            updateZeroAndSignFlagsUsing(registers.a)
+        case .zeroPage:
+            cycles = 5
+            performROL(on: fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 6
+            performROL(on: fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 6
+            performROL(on: fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 7
+            performROL(on: fetchAbsoluteXAddress())
+        default:
+            return 0
+        }
+        return cycles
+    }
+    
+    ///
+    /// Performs a logical right shift on a value under a given memory address.
+    /// It writes back the result into the same address.
+    /// Finally updates zero and sign register flags.
+    ///
+    private func performROR(on address: Address) {
+        let value = readByte(address)
+        let oldCarryBit = UInt8(registers.carryFlag ? 1 : 0)
+        registers.carryFlag = (value & 0b00000001) > 0
+        var newValue = value >> 1
+        newValue = (newValue & 0b01111111) | oldCarryBit << 7
+        writeByte(newValue, to: address)
+        updateZeroAndSignFlagsUsing(newValue)
+    }
+    
+    func ror(_ addressingMode: AddressingMode) -> Int {
+        var cycles: Int
+        switch addressingMode {
+        case .accumulator:
+            cycles = 2
+            let oldCarryBit = UInt8(registers.carryFlag ? 1 : 0)
+            registers.carryFlag = (registers.a & 0b00000001) > 0
+            registers.a = registers.a >> 1
+            registers.a = (registers.a & 0b01111111) | oldCarryBit << 7
+            updateZeroAndSignFlagsUsing(registers.a)
+        case .zeroPage:
+            cycles = 5
+            performROR(on: fetchZeroPageAddress())
+        case .zeroPageX:
+            cycles = 6
+            performROR(on: fetchZeroPageXAddress())
+        case .absolute:
+            cycles = 6
+            performROR(on: fetchAbsoluteAddress())
+        case .absoluteX:
+            cycles = 7
+            performROR(on: fetchAbsoluteXAddress())
         default:
             return 0
         }
