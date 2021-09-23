@@ -114,7 +114,7 @@ final class SBCTests: XCTestCase {
         XCTAssertEqual(nes.cpu.totalCycles, cycles)
     }
 
-    func testNegatives() throws {
+    func testPositiveOverflow() throws {
         let nes = Nes()
         nes.cpu.registers.carryFlag = true
         nes.cpu.registers.a = 127
@@ -129,6 +129,25 @@ final class SBCTests: XCTestCase {
         XCTAssertTrue(nes.cpu.registers.signFlag)
         XCTAssertFalse(nes.cpu.registers.carryFlag)
         XCTAssertTrue(nes.cpu.registers.overflowFlag)
+        testUnchangedRegisterFlags(nes)
+        XCTAssertEqual(nes.cpu.totalCycles, cycles)
+    }
+    
+    func testNegatives() throws {
+        let nes = Nes()
+        nes.cpu.registers.carryFlag = true
+        nes.cpu.registers.a = 0b11111111 // -1
+        nes.memory.storage[0x0000] = nes.cpu.opcode(.sbc, .absolute)
+        nes.memory.storage[0x0001] = 0x80
+        nes.memory.storage[0x0002] = 0x01
+        nes.memory.storage[0x0180] = 0b11111111 // -1
+        let cycles = 4
+        nes.start(cycles: cycles)
+        XCTAssertEqual(nes.cpu.registers.a, 0)
+        XCTAssertTrue(nes.cpu.registers.zeroFlag)
+        XCTAssertFalse(nes.cpu.registers.signFlag)
+        XCTAssertTrue(nes.cpu.registers.carryFlag)
+        XCTAssertFalse(nes.cpu.registers.overflowFlag)
         testUnchangedRegisterFlags(nes)
         XCTAssertEqual(nes.cpu.totalCycles, cycles)
     }
