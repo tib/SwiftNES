@@ -231,7 +231,7 @@ extension Cpu {
         case .sei: return sei(addressingMode)
         case .brk: return brk(addressingMode)
         case .nop: return nop(addressingMode)
-        case .rti: return 0
+        case .rti: return rti(addressingMode)
         case .invalid: return invalid(addressingMode)
         }
     }
@@ -255,7 +255,26 @@ extension Cpu {
         guard addressingMode == .implicit else {
             return 0
         }
+        pushWordToStack(registers.pc)
+        pushByteToStack(registers.p)
+        // TODO: use 0xFFFE later on, since NES has only 2KB RAM, we're good for now
+        registers.pc = readWord(0x00FE)
+        registers.breakFlag = true
         return 7
+    }
+    
+    ///
+    /// The RTI instruction is used at the end of an interrupt processing routine.
+    ///
+    /// It pulls the processor flags from the stack followed by the program counter.
+    ///
+    func rti(_ addressingMode: AddressingMode) -> Int {
+        guard addressingMode == .implicit else {
+            return 0
+        }
+        registers.p = popByteFromStack()
+        registers.pc = popWordFromStack()
+        return 6
     }
     
     /// The NOP instruction causes no changes to the processor other than the normal incrementing of the program counter to the next instruction.

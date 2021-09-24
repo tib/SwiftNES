@@ -13,7 +13,7 @@ final class PLPTests: XCTestCase {
     func testImplicit() throws {
         let nes = Nes()
         nes.cpu.registers.sp = 0xFC
-        nes.memory.storage[0x01FC] = 0x42
+        nes.memory.storage[0x01FD] = 0x42
         nes.memory.storage[0x00] = nes.cpu.opcode(.plp, .implicit)
 
         let cycles = 4

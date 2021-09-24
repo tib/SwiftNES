@@ -123,7 +123,7 @@ final class Cpu {
     }
     
     func popByteFromStack() -> Byte {
-        let value = readByte(spAddress)
+        let value = readByte(spAddress + 1)
         registers.sp += 1
         return value
     }

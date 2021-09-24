@@ -24,7 +24,7 @@ final class PLATests: XCTestCase {
         let registers = nes.cpu.registers
         nes.cpu.registers.a = 0x00
         nes.cpu.registers.sp = 0xFC
-        nes.memory.storage[0x01FC] = 0x42
+        nes.memory.storage[0x01FD] = 0x42
         nes.memory.storage[0x00] = nes.cpu.opcode(.pla, .implicit)
 
         let cycles = 4
@@ -60,7 +60,7 @@ final class PLATests: XCTestCase {
         let registers = nes.cpu.registers
         nes.cpu.registers.a = 0x00
         nes.cpu.registers.sp = 0xFC
-        nes.memory.storage[0x01FC] = 0b10000000
+        nes.memory.storage[0x01FD] = 0b10000000
         nes.memory.storage[0x00] = nes.cpu.opcode(.pla, .implicit)
 
         let cycles = 4
